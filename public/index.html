@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>블로그 스튜디오</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f5f2;--panel:#fff;--ink:#141414;--muted:#6b6b6b;--line:#e3e3de;--accent:#00a800;--warn:#d97706;--bad:#c62828;--blue:#2563eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Noto Sans KR",system-ui,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:var(--blue)}
+.hidden{display:none!important}
+header{background:#111;color:#fff;padding:0 24px;display:flex;align-items:center;gap:18px;position:sticky;top:0;z-index:5;height:56px}
+header .logo{font-weight:900;letter-spacing:.5px;border:2px solid #fff;border-radius:999px;padding:1px 11px;font-size:13px}
+header nav{display:flex;gap:2px;flex:1;overflow-x:auto}
+header nav button{background:none;border:0;color:#aaa;padding:16px 12px;font-weight:500;white-space:nowrap;border-bottom:3px solid transparent}
+header nav button.on{color:#fff;border-bottom-color:#00cc00}
+header .me{font-size:13px;color:#bbb;white-space:nowrap}header .me button{background:none;border:1px solid #555;color:#ddd;border-radius:6px;padding:2px 8px;margin-left:8px}
+main{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
+.btn{border:0;border-radius:8px;padding:9px 16px;font-weight:700;background:var(--ink);color:#fff;white-space:nowrap}
+.btn.accent{background:var(--accent)}.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.warn{background:var(--warn)}.btn.sm{padding:4px 10px;font-size:12px}.btn:disabled{opacity:.5;cursor:default}
+.req{display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px}.req.req2{grid-template-columns:1fr 1fr;margin-bottom:24px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:18px;text-align:center;color:var(--muted);font-size:13px;background:#fafaf7;transition:.15s}
+.drop.over{border-color:var(--accent);background:#effaef;color:var(--ink)}
+.flist{list-style:none;margin:10px 0 0;padding:0;font-size:13px;max-height:180px;overflow:auto}
+.flist li{display:flex;gap:8px;align-items:center;padding:4px 2px;border-bottom:1px solid var(--line)}.flist li span.n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flist li button{border:0;background:none;color:var(--muted);font-size:16px;line-height:1}.flist .skip{color:var(--warn)}
+.srcgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{font-size:15px;margin:0 0 6px}.card p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>input,.row>select{flex:1;min-width:140px}
+input,textarea,select{border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:#fff;color:var(--ink);width:100%}
+textarea{resize:vertical}
+label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px;font-weight:500}
+.dup{margin-top:10px;background:#fff8ec;border:1px solid #f3d29b;border-radius:8px;padding:10px 12px;font-size:13px}.dup ul{margin:6px 0;padding-left:18px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 14px;font-size:13px}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}.tabs .n{opacity:.6;margin-left:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.post{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .1s}
+.post:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.post .meta{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.post .t{font-weight:700;font-size:14px;line-height:1.45}.sub{font-size:12px;color:var(--muted)}
+.badge{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px;width:max-content;background:#eee}
+.b-초안{background:#e8eef9}.b-승인{background:#dff3df;color:#106b10}.b-수정요청{background:#fdebd7;color:#9a4a00}
+.b-발행완료{background:#ececec;color:#555}.b-보류{background:#f3e8f7}.b-대기,.b-작성중{background:#fff6d6;color:#8a6100}.b-실패{background:#fde2e2;color:var(--bad)}
+.mini{aspect-ratio:1;background:#0b0b0b center/cover;color:#fff;position:relative;padding:15% 12% 0;overflow:hidden;container-type:inline-size}
+.mini .h{color:#00cc00;font-weight:900;font-size:12.5cqw;line-height:1.15;letter-spacing:-.04em}
+.mini .l{font-weight:900;font-size:12.5cqw;line-height:1.15;letter-spacing:-.04em}.mini .s{font-size:4cqw;opacity:.85;margin-top:4cqw}
+.mini .tag{position:absolute;left:8px;top:8px;background:var(--warn);color:#fff;font-size:11px;border-radius:4px;padding:1px 6px}
+.waitcard{border-style:dashed}.waitcard .mini{aspect-ratio:2/1;background:#2a2a2a;display:flex;align-items:center;justify-content:center;padding:0;font-size:13px;color:#ccc}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid #ccc;border-top-color:#00cc00;border-radius:50%;animation:sp 1s linear infinite;margin-right:6px;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{color:var(--muted);padding:40px;text-align:center}
+table.list{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13px}
+table.list th{background:#fafaf7;text-align:left;font-weight:500;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.list td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.list tr.click{cursor:pointer}table.list tr.click:hover td{background:#fafaf7}
+.scroll{overflow-x:auto}
+.filters{display:grid;grid-template-columns:2fr repeat(4,1fr) auto;gap:8px;margin-bottom:14px;align-items:end}
+.filters label{margin:0 0 4px}
+.tl-day{font-weight:700;margin:22px 0 8px;font-size:14px}
+.tl{background:#fff;border:1px solid var(--line);border-radius:12px}
+.tl-item{display:grid;grid-template-columns:52px 90px 110px 1fr;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px;align-items:baseline}
+.tl-item:last-child{border-bottom:0}.tl-item .time{color:var(--muted)}
+.act{font-weight:700}.act-승인,.act-발행완료{color:#106b10}.act-수정요청{color:#9a4a00}.act-생성,.act-Claude_재작성,.act-자동_재작성{color:var(--blue)}
+.drawer{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:10;display:flex;justify-content:flex-end}
+.drawer .in{background:var(--bg);width:min(1040px,100%);height:100%;overflow:auto;padding:20px 24px 60px}
+.dhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}.dhead h2{margin:0;font-size:18px;flex:1}
+.dgrid{display:grid;grid-template-columns:320px 1fr;gap:22px}
+.info{font-size:13px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px}
+.info dt{color:var(--muted);font-size:12px;margin-top:6px}.info dd{margin:0}
+.memo{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;white-space:pre-wrap}
+.memo b{font-size:12px}.memo.claude{background:#f3f7ff}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.preview{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin-top:8px}.preview h2{font-size:18px}
+canvas.thumb{width:100%;aspect-ratio:1;border-radius:10px;display:block;background:#000}
+.vers{margin-top:20px}.vers h3{font-size:15px;margin:0 0 8px}
+.ver{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:8px 12px;background:#fff;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:15;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .in{background:#fff;border-radius:12px;max-width:900px;width:100%;max-height:90vh;overflow:auto;padding:20px 22px}
+.diff{font-size:13px;white-space:pre-wrap;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fcfcfa;max-height:50vh;overflow:auto}
+.diff .add{background:#e2f5e2}.diff .del{background:#fde4e4;text-decoration:line-through;color:#8a2a2a}
+.fdiff td{padding:6px 8px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:8px;z-index:30;font-size:14px;max-width:90vw}
+.login{max-width:360px;margin:12vh auto;background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px}
+.login h1{font-size:20px;margin:0 0 4px}.err{color:var(--bad);font-size:13px;margin-top:8px}
+.pimg{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.pimg img{width:120px;height:80px;object-fit:cover;border-radius:6px;background:#eee;cursor:zoom-in}
+.pimg .row{margin-top:6px}.seg{display:flex;gap:6px;margin:10px 0 4px}.seg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px;font-size:13px;font-weight:700}.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.preview figure{margin:14px 0}.preview figure img{max-width:100%;border-radius:8px;display:block}.preview figcaption{font-size:12px;color:var(--muted);margin-top:4px}
+.fmt{width:100%;border-collapse:collapse;font-size:13px}.fmt th{font-weight:500;color:var(--muted);font-size:12px;text-align:left;padding:4px 6px}.fmt td{padding:4px 6px}.fmt input[type=color]{padding:2px;height:36px;min-width:46px}.fmt input,.fmt select{padding:6px 8px}
+.fmt select{min-width:104px}.fmtwrap{overflow-x:auto}.fmtgrid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.set{display:grid;grid-template-columns:1fr 1fr;gap:16px}.set .full{grid-column:1/-1}
+@media (max-width:820px){.req,.dgrid,.set,.srcgrid,.fmtgrid{grid-template-columns:1fr}.grid4{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr 1fr}.tl-item{grid-template-columns:44px 1fr;}.tl-item .who,.tl-item .act{grid-column:2}header{padding:0 12px;gap:8px}header .me span{display:none}}
+</style>
+</head>
+<body>
+
+<section id="loginView" class="login hidden">
+  <div id="loginLogo" class="hidden" style="display:inline-block;border:2px solid #111;border-radius:999px;padding:1px 10px;font-weight:900;font-size:13px;margin-bottom:12px"></div>
+  <h1 id="loginTitle">블로그 스튜디오</h1>
+  <p style="color:var(--muted);font-size:13px;margin:0 0 8px">팀 비밀번호로 들어갑니다.</p>
+  <label for="lname">이름</label><input id="lname" placeholder="예: 홍길동" maxlength="20">
+  <label for="lpw">팀 비밀번호</label><input id="lpw" type="password">
+  <p class="sub" style="margin:6px 0 0">관리자는 관리자 비밀번호로 들어오면 설정 탭이 열립니다.</p>
+  <button class="btn accent" style="width:100%;margin-top:16px" id="loginBtn">들어가기</button>
+  <div class="err" id="loginErr"></div>
+</section>
+
+<div id="appView" class="hidden">
+<header>
+  <span class="logo hidden" id="hdrLogo"></span><b id="hdrName" style="font-size:14px;white-space:nowrap"></b>
+  <nav id="nav"><button data-v="dash" class="on">대시보드</button><button data-v="archive">아카이브</button><button data-v="history">히스토리</button><button data-v="settings">설정</button></nav>
+  <span class="me"><span id="meName"></span><button id="logoutBtn">로그아웃</button></span>
+</header>
+<main>
+  <!-- 대시보드 -->
+  <section id="v-dash">
+    <div class="req">
+      <div class="card">
+        <h2>트렌드 자동생성</h2>
+        <p>최신 트렌드를 조사해 쓰지 않은 주제로 초안을 만듭니다. 보통 1~3분 걸립니다.</p>
+        <button class="btn accent" id="trendBtn">트렌드로 새 글 요청</button>
+      </div>
+      <div class="card">
+        <h2>키워드로 생성</h2>
+        <p>쓰고 싶은 키워드를 넣으면 이미 다룬 주제인지 먼저 확인합니다.</p>
+        <div class="row"><input id="kw" placeholder="글로 쓰고 싶은 키워드를 입력하세요" maxlength="100"><button class="btn" id="kwBtn">요청</button></div>
+        <input id="kwMemo" style="margin-top:8px" placeholder="(선택) 메모 — 강조할 제품, 타깃 업종, 피할 내용 등" maxlength="500">
+        <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="kwWeb" style="width:auto"> 웹 검색으로 최신 정보 보완</label>
+        <div id="dupBox" class="dup hidden"></div>
+      </div>
+    </div>
+    <div class="req req2">
+      <div class="card">
+        <h2>자료로 생성</h2>
+        <p>카탈로그·보도자료·기사·메모 같은 파일이나 폴더를 올리면 그 내용만으로 블로그 글 초안을 만듭니다. PDF, Word(.docx), PowerPoint(.pptx), Excel(.xlsx), 텍스트(.txt .md .csv .html), 이미지(.jpg .png .webp) · 파일당 4MB, 최대 20개.</p>
+        <div class="drop" id="srcDrop">여기에 파일이나 폴더를 끌어다 놓으세요<br>
+          <span class="row" style="justify-content:center;margin-top:8px"><button class="btn ghost sm" id="srcPick">파일 선택</button><button class="btn ghost sm" id="srcPickDir">폴더 선택</button></span></div>
+        <input type="file" id="srcFile" multiple class="hidden"><input type="file" id="srcDir" webkitdirectory multiple class="hidden">
+        <ul class="flist" id="srcList"></ul>
+        <div class="actions"><button class="btn accent" id="srcBtn">자료로 글 요청</button><span class="sub" id="srcProg"></span></div>
+        <div id="srcDup" class="dup hidden"></div>
+      </div>
+      <div class="card">
+        <h2>링크로 생성</h2>
+        <p>기사·보도자료·제품 페이지 등의 링크를 넣으면 페이지를 읽고 그 내용을 바탕으로 초안을 만듭니다. 로그인이 필요하거나 스크립트로만 열리는 페이지는 읽지 못할 수 있습니다.</p>
+        <label style="margin-top:0">링크 (한 줄에 하나, 최대 10개)</label>
+        <textarea id="lnkUrls" rows="5" placeholder="https://..."></textarea>
+        <div class="actions"><button class="btn accent" id="lnkBtn">링크에서 가져오기</button><span class="sub" id="lnkProg"></span></div>
+        <div id="lnkDup" class="dup hidden"></div>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- 아카이브 -->
+  <section id="v-archive" class="hidden">
+    <div class="filters">
+      <div><label>검색 (제목·키워드·태그·본문)</label><input id="aq" placeholder="검색어"></div>
+      <div><label>상태</label><select id="as"><option value="">전체</option></select></div>
+      <div><label>요청자</label><select id="ar"><option value="">전체</option></select></div>
+      <div><label>승인자</label><select id="aa"><option value="">전체</option></select></div>
+      <div><label>생성 월</label><select id="am"><option value="">전체</option></select></div>
+      <button class="btn ghost" id="csvBtn" title="백업용">CSV</button>
+    </div>
+    <div class="sub" id="aCount" style="margin-bottom:8px"></div>
+    <div class="scroll"><table class="list" id="aTable"></table></div>
+  </section>
+
+  <!-- 히스토리 -->
+  <section id="v-history" class="hidden">
+    <div class="filters">
+      <div><label>검색 (글 ID·내용)</label><input id="hq" placeholder="예: B-2026-001"></div>
+      <div><label>사람</label><select id="hp"><option value="">전체</option></select></div>
+      <div><label>활동</label><select id="ht"><option value="">전체</option></select></div>
+      <div><label>시작일</label><input id="hf" type="date"></div>
+      <div><label>종료일</label><input id="he" type="date"></div>
+      <button class="btn ghost" id="hReload">새로고침</button>
+    </div>
+    <div class="sub" id="hCount"></div>
+    <div id="timeline"></div>
+  </section>
+
+  <!-- 설정 -->
+  <section id="v-settings" class="hidden">
+    <div class="set">
+      <div class="card full">
+        <h2>고객 프로필</h2>
+        <p>이 사이트를 쓰는 고객의 브랜드·상품·독자·톤입니다. 여기 적은 내용이 조사·글쓰기·사진 생성에 자동으로 반영됩니다. <b id="pfWarn" style="color:var(--bad)"></b></p>
+        <div class="grid4">
+          <div><label>앱 이름 (상단·로그인 화면)</label><input id="pfAppName" maxlength="30"></div>
+          <div><label>로고 글자 (비우면 표시 안 함)</label><input id="pfLogo" maxlength="16"></div>
+          <div><label>포인트 색</label><input id="pfAccent" type="color" style="height:38px;padding:2px"></div>
+          <div><label>네이버 블로그 ID (글쓰기 바로가기용)</label><input id="pfBlog" maxlength="40" placeholder="blog.naver.com/ 뒤의 ID"></div>
+        </div>
+        <div class="row"><div style="flex:1"><label>회사·브랜드명</label><input id="pfCompany" maxlength="60" placeholder="예: OO베이커리"></div><div style="flex:2"><label>업종 한 줄 소개</label><input id="pfIndustry" maxlength="200" placeholder="예: 서울 성수동의 비건 디저트 카페"></div></div>
+        <div class="row" style="align-items:flex-start">
+          <div style="flex:1;min-width:240px"><label>주력 상품·서비스 (글에서 연결할 대상)</label><textarea id="pfProducts" rows="4" placeholder="한 줄에 하나씩. 특징·정확한 표기도 함께"></textarea></div>
+          <div style="flex:1;min-width:240px"><label>타깃 독자</label><textarea id="pfAudience" rows="4" placeholder="누가 읽는지, 무엇이 궁금한지"></textarea></div>
+        </div>
+        <div class="row" style="align-items:flex-start">
+          <div style="flex:1;min-width:240px"><label>톤앤매너</label><textarea id="pfTone" rows="4" placeholder="예: 친근한 존댓말, 짧은 문장, 전문용어는 풀어서"></textarea></div>
+          <div style="flex:1;min-width:240px"><label>소재 발굴 축 (트렌드 생성이 찾을 주제 영역)</label><textarea id="pfTopics" rows="4" placeholder="한 줄에 하나씩. 예: 계절 메뉴, 원재료 가격, 창업 팁"></textarea></div>
+        </div>
+        <div class="row" style="align-items:flex-start">
+          <div style="flex:1;min-width:240px"><label>주의·금지 사항</label><textarea id="pfAvoid" rows="3" placeholder="쓰면 안 되는 표현, 경쟁사 언급 규칙, 법적 주의 문구 등"></textarea></div>
+          <div style="flex:1;min-width:240px"><label>꼭 넣을 태그</label><input id="pfTags" maxlength="300" placeholder="#브랜드명 #지역명"></div>
+        </div>
+        <div class="actions"><button class="btn" id="pfSave">프로필 저장</button><button class="btn ghost" id="cfgExport">전체 설정 내보내기 (.json)</button><button class="btn ghost" id="cfgImportBtn">설정 가져오기</button><input type="file" id="cfgImport" accept="application/json,.json" class="hidden"></div>
+        <div class="sub">내보낸 파일에는 프로필·글쓰기 규칙·CTA·썸네일 형식·사진 지침·모델 설정이 들어 있습니다 (비밀번호·API 키·글 데이터는 제외). 다른 고객 사이트에서 가져와 출발점으로 쓸 수 있습니다.</div>
+      </div>
+      <div class="card">
+        <h2>썸네일 배경</h2>
+        <p>앱은 배경 위에 썸네일 문구를 직접 그립니다. 그래서 <b>문구가 없는 배경</b>을 올려야 글자가 겹치지 않습니다 (Canva 샘플에서 문구 4줄을 지운 뒤 1080×1080 PNG로 내려받기).</p>
+        <div class="row" style="align-items:flex-start;gap:12px">
+          <div style="flex:1;min-width:120px"><div class="sub">올린 배경 원본</div><div id="bgRaw" class="sub" style="aspect-ratio:1;background:#eee center/cover;border-radius:10px;display:flex;align-items:center;justify-content:center">기본 배경 사용 중</div></div>
+          <div style="flex:1;min-width:120px"><div class="sub">적용 예시</div><canvas class="thumb" id="bgPreview" width="1080" height="1080"></canvas></div>
+        </div>
+        <div class="row" style="margin-top:10px"><input type="file" id="bgFile" accept="image/png,image/jpeg,image/webp"><button class="btn" id="bgUpload">올리기</button><button class="btn ghost" id="bgReset">기본 배경으로</button></div>
+      </div>
+      <div class="card">
+        <div id="adminWarn" class="dup hidden" style="margin:0 0 12px">관리자 비밀번호(ADMIN_PASSWORD)가 아직 설정되지 않아 팀 비밀번호로 들어온 모든 사람이 이 설정 탭을 볼 수 있습니다. Netlify 환경변수에 ADMIN_PASSWORD를 추가하고 재배포하세요.</div>
+        <h2>Claude 연결</h2>
+        <p>글 생성이 실패하면 먼저 여기서 연결을 확인하세요. API 키·모델·크레딧 문제를 알려줍니다.</p>
+        <label>글쓰기 모델 (품질)</label><input id="sModel" placeholder="claude-sonnet-5-5">
+        <label>조사 모델 (웹 검색, 저렴한 모델 권장)</label><input id="sResearch" placeholder="claude-haiku-5-5">
+        <div class="row"><div style="flex:1"><label>글 1건당 웹 검색 최대 횟수</label><select id="sSearches"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+          <div style="flex:2"><label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin-top:30px"><input type="checkbox" id="sKwSearch" style="width:auto"> 키워드 카드의 '웹 검색 보완' 기본으로 켜기</label></div></div>
+        <div class="actions"><button class="btn ghost" id="sSave2">비용 설정 저장</button><button class="btn" id="apiTest">연결 테스트</button></div>
+        <div id="apiResult" class="sub"></div>
+        <h2 style="margin-top:20px">API 비용 (추정)</h2>
+        <p>앱이 기록한 사용량 기준 추정치입니다. 실제 청구액은 console.anthropic.com → Usage에서 확인하세요.</p>
+        <div id="usage" class="sub">불러오는 중…</div>
+        <h2 style="margin-top:20px">백업</h2>
+        <p>전체 글을 CSV로 내려받습니다.</p>
+        <button class="btn ghost" id="csvBtn2">CSV 내려받기</button>
+      </div>
+      <div class="card full">
+        <h2>썸네일 문구 형식</h2>
+        <p>줄 수·색·크기·굵기·위치를 바꾸면 모든 글의 썸네일과 다음에 생성되는 글의 문구 길이에 적용됩니다. 오른쪽 미리보기로 확인한 뒤 저장하세요.</p>
+        <div class="fmtgrid">
+          <div>
+            <div class="fmtwrap"><table class="fmt"><thead><tr><th>줄</th><th>이름</th><th>색</th><th>크기(px)</th><th>굵기</th><th>최대 글자</th><th>투명도</th><th>예시 문구</th><th></th></tr></thead><tbody id="fmtLines"></tbody></table></div>
+            <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="fmtAdd">+ 줄 추가</button><label style="display:flex;gap:8px;align-items:center;color:var(--ink);margin:0"><input type="checkbox" id="fmtSubOn" style="width:auto"> 부제 줄 사용</label></div>
+            <div class="grid4" style="margin-top:6px">
+              <div><label>가로 정렬</label><select id="fmtAlign"><option value="left">왼쪽</option><option value="center">가운데</option><option value="right">오른쪽</option></select></div>
+              <div><label>세로 위치</label><select id="fmtVAlign"><option value="top">위</option><option value="middle">가운데</option><option value="bottom">아래</option></select></div>
+              <div><label>위(아래) 여백 px</label><input type="number" id="fmtTop" min="0" max="1000"></div>
+              <div><label>좌우 여백 px</label><input type="number" id="fmtMarginX" min="0" max="500"></div>
+              <div><label>줄 간격 (배수)</label><input type="number" id="fmtLH" min="0.8" max="2" step="0.05"></div>
+              <div><label>부제 위 간격 px</label><input type="number" id="fmtSubGap" min="0" max="300"></div>
+            </div>
+            <div class="actions"><button class="btn" id="fmtSave">형식 저장</button><button class="btn ghost" id="fmtReset">기본 형식으로</button></div>
+            <div class="sub">기준 캔버스는 1080×1080입니다. 문구가 길면 여백 안에 들어오도록 글자가 자동으로 작아집니다.</div>
+          </div>
+          <div><div class="sub">미리보기 (저장 전)</div><canvas class="thumb" id="fmtPreview" width="1080" height="1080"></canvas></div>
+        </div>
+      </div>
+      <div class="card full">
+        <h2>AI 사진</h2>
+        <p>글 상세의 '사진' 칸에서 <b>AI로 만들기</b>를 누르면 아래 지침을 따라 Cloudflare Workers AI가 사진을 만듭니다. <span id="imgEnv"></span></p>
+        <div class="row" style="align-items:flex-start;gap:16px">
+          <div style="flex:2;min-width:260px">
+            <label>사진 생성 지침 (모든 AI 사진에 적용 — 분위기·피사체·금지 사항 등을 자유롭게 적으세요)</label><textarea id="sImgGuide" rows="9"></textarea>
+            <div class="row"><div style="flex:2"><label>이미지 모델</label><select id="sImgModel"></select></div>
+              <div style="flex:1"><label>가로 px</label><input type="number" id="sImgW" min="256" max="2048" step="64"></div><div style="flex:1"><label>세로 px</label><input type="number" id="sImgH" min="256" max="2048" step="64"></div></div>
+            <div class="sub" id="imgModelNote"></div>
+            <div class="actions"><button class="btn" id="imgSave">사진 설정 저장</button><button class="btn ghost" id="imgGuideReset">지침을 기본값으로</button></div>
+          </div>
+          <div style="flex:1;min-width:240px">
+            <label>테스트 주제 (저장된 설정으로 1장 생성)</label><input id="imgTestSubject" placeholder="비워 두면 주력 상품 기준으로 만듭니다">
+            <div class="actions"><button class="btn ghost" id="imgTest">테스트 사진 만들기</button></div>
+            <div id="imgTestOut" class="sub"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card full">
+        <h2>글쓰기 규칙</h2>
+        <p>Claude가 글을 쓸 때 따르는 공통 규칙입니다. 위 고객 프로필(상품·독자·톤)이 이 규칙 앞에 자동으로 붙습니다. 바꾸면 다음 글부터 적용됩니다.</p>
+        <textarea id="sRules" rows="16"></textarea>
+        <label>이미 다룬 주제 (한 줄에 하나 — 중복 검사에 포함)</label><textarea id="sTopics" rows="6"></textarea>
+        <label>CTA (본문 끝에 자동으로 붙음)</label><textarea id="sCta" rows="3"></textarea>
+        <div class="actions"><button class="btn" id="sSave">설정 저장</button><button class="btn ghost" id="sReset">규칙을 기본값으로</button></div>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+
+<div id="drawer" class="drawer hidden"><div class="in" id="drawerIn"></div></div>
+<div id="modal" class="modal hidden"><div class="in" id="modalIn"></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let token = null, me = "", role = "member", state = { posts: [], requests: [] }, view = "dash", tab = "전체", open = null, pollT = null, activity = [];
+try { token = localStorage.getItem("ubs_token"); me = localStorage.getItem("ubs_name") || ""; role = localStorage.getItem("ubs_role") || "member"; } catch {}
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.remove("hidden"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 3000); }
+
+async function api(path, body, method) {
+  const res = await fetch("/api/" + path, {
+    method: method || (body ? "POST" : "GET"),
+    headers: { "content-type": "application/json", ...(token ? { authorization: "Bearer " + token } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({ error: "응답 오류" }));
+  if (res.status === 401 && path !== "login") { logout(); throw new Error(data.error); }
+  if (!res.ok && res.status !== 409) throw new Error(data.error || "오류");
+  if (res.status === 409 && !data.duplicates) throw new Error(data.error);
+  return { status: res.status, ...data };
+}
+
+// ---------- 로그인 ----------
+function showLogin() { $("#loginView").classList.remove("hidden"); $("#appView").classList.add("hidden"); $("#lname").value = me; }
+function logout() { token = null; try { localStorage.removeItem("ubs_token"); } catch {} clearTimeout(pollT); showLogin(); }
+$("#loginBtn").onclick = async () => {
+  $("#loginErr").textContent = "";
+  try {
+    const r = await api("login", { name: $("#lname").value, password: $("#lpw").value });
+    token = r.token; me = r.name; role = r.role || "member";
+    try { localStorage.setItem("ubs_token", token); localStorage.setItem("ubs_name", me); localStorage.setItem("ubs_role", role); } catch {}
+    start();
+  } catch (e) { $("#loginErr").textContent = e.message; }
+};
+$("#lpw").addEventListener("keydown", (e) => e.key === "Enter" && $("#loginBtn").click());
+$("#logoutBtn").onclick = logout;
+
+// ---------- 브랜드 (고객별 이름·로고·색) ----------
+function applyBrand(b) {
+  if (!b) return;
+  document.title = b.appName; $("#loginTitle").textContent = b.appName; $("#hdrName").textContent = b.appName;
+  for (const id of ["loginLogo", "hdrLogo"]) { $("#" + id).textContent = b.logoText || ""; $("#" + id).classList.toggle("hidden", !b.logoText); }
+  if (/^#[0-9a-f]{6}$/i.test(b.accent || "")) document.documentElement.style.setProperty("--accent", b.accent);
+}
+fetch("/api/brand").then((r) => r.json()).then(applyBrand).catch(() => {});
+function start() {
+  $("#loginView").classList.add("hidden"); $("#appView").classList.remove("hidden"); applyRole();
+  load(); show(view);
+}
+
+// ---------- 화면 전환 ----------
+$$("#nav button").forEach((b) => (b.onclick = () => show(b.dataset.v)));
+function applyRole() {
+  const isAdmin = role === "admin";
+  $("#meName").textContent = me + " 님" + (isAdmin ? " · 관리자" : "");
+  $('#nav button[data-v="settings"]').classList.toggle("hidden", !isAdmin);
+  if (!isAdmin && view === "settings") show("dash");
+}
+function show(v) {
+  if (v === "settings" && role !== "admin") v = "dash";
+  view = v;
+  $$("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.v === v));
+  ["dash", "archive", "history", "settings"].forEach((x) => $("#v-" + x).classList.toggle("hidden", x !== v));
+  if (v === "archive") renderArchive();
+  if (v === "history") loadHistory();
+  if (v === "settings") loadSettings();
+}
+
+// ---------- 데이터 ----------
+async function load() {
+  clearTimeout(pollT);
+  try {
+    const first = !state.loaded;
+    state = await api("data"); state.loaded = true;
+    if (state.role && state.role !== role) { role = state.role; try { localStorage.setItem("ubs_role", role); } catch {} applyRole(); }
+    applyBrand(state.brand);
+    if (first) $("#kwWeb").checked = !!state.keywordSearchDefault;
+    bgCache.ver !== state.thumbBgVer && loadBg();
+    renderDash(); if (view === "archive") renderArchive();
+  } catch (e) { toast(e.message); }
+  const busy = state.requests.some((r) => ["대기", "작성중"].includes(r.state)) || state.posts.some((p) => p.rewriting || p.imagesGenerating);
+  pollT = setTimeout(load, busy ? 5000 : 60000);
+  if (open && !$("#drawer").classList.contains("hidden")) {
+    const s = state.posts.find((p) => p.id === open.post.id);
+    if (s && (s.version !== open.post.version || !!s.imagesGenerating !== !!open.post.imagesGenerating) && !dirty()) openPost(s.id);
+  }
+}
+
+// ---------- 썸네일 (캔버스) ----------
+const bgCache = { img: null, ver: null };
+function loadBg() {
+  bgCache.ver = state.thumbBgVer;
+  if (!state.hasThumbBg) { bgCache.img = null; return; }
+  const img = new Image(); img.onload = () => { bgCache.img = img; $$("canvas.thumb[data-id]").forEach((c) => drawFor(c)); thumbURLCache.clear(); renderDash(); if (view === "settings") drawSample(); }; img.src = "/api/thumb-bg?v=" + encodeURIComponent(state.thumbBgVer);
+}
+let fontReady = document.fonts ? document.fonts.load('900 100px "Noto Sans KR"').catch(() => {}) : Promise.resolve();
+const LINE_KEYS = ["thumbH", "thumbT1", "thumbT2", "thumbT3"];
+const DEF_FMT = { lines: [{ label: "강조", color: "#00cc00", size: 137, weight: 900, maxChars: 6, opacity: 1 }, { label: "제목 1줄", color: "#fdfdfb", size: 137, weight: 900, maxChars: 7, opacity: 1 }, { label: "제목 2줄", color: "#ffffff", size: 137, weight: 900, maxChars: 7, opacity: 1 }],
+  subtitle: { enabled: true, label: "부제", color: "#f6f2ed", size: 43, weight: 400, maxChars: 16, opacity: 0.84 }, align: "left", vAlign: "top", top: 243, marginX: 151, lineHeight: 1.15, subGap: 22 };
+const curFmt = () => state.thumbFormat || DEF_FMT;
+async function drawThumb(cv, t, f = curFmt()) {
+  await fontReady;
+  const c = cv.getContext("2d"); c.clearRect(0, 0, 1080, 1080);
+  if (bgCache.img) {
+    const im = bgCache.img, s = Math.max(1080 / im.width, 1080 / im.height);
+    c.drawImage(im, (1080 - im.width * s) / 2, (1080 - im.height * s) / 2, im.width * s, im.height * s);
+  } else {
+    c.fillStyle = "#000"; c.fillRect(0, 0, 1080, 1080);
+    c.strokeStyle = "rgba(255,255,255,.07)"; c.lineWidth = 60; c.beginPath(); c.ellipse(540, 560, 600, 230, 0, 0, Math.PI * 2); c.stroke();
+    const lt = (state.brand?.logoText || "").trim();
+    if (lt) { c.fillStyle = "rgba(255,255,255,.85)"; c.font = '900 34px "Noto Sans KR", sans-serif'; c.textAlign = "right"; c.textBaseline = "middle"; c.fillText(lt, 1020, 1010); }
+  }
+  // 문구: 관리자 설정(썸네일 문구 형식)대로 그린다
+  const rows = f.lines.map((l, i) => ({ ...l, txt: t[LINE_KEYS[i]] || "", gap: 0, adv: l.size * f.lineHeight }));
+  if (f.subtitle.enabled) rows.push({ ...f.subtitle, txt: t.thumbSub || "", gap: f.subGap, adv: f.subtitle.size * 1.3 });
+  const total = rows.reduce((a, r) => a + r.gap + r.adv, 0);
+  let y = f.vAlign === "middle" ? (1080 - total) / 2 : f.vAlign === "bottom" ? 1080 - f.top - total : f.top;
+  const x = f.align === "center" ? 540 : f.align === "right" ? 1080 - f.marginX : f.marginX, maxW = Math.max(200, 1080 - 2 * f.marginX);
+  c.textAlign = f.align; c.textBaseline = "middle";
+  for (const r of rows) {
+    y += r.gap;
+    c.globalAlpha = r.opacity; c.fillStyle = r.color; fit(c, r.txt, maxW, r.size, r.weight); c.fillText(r.txt, x, y + r.size * 0.577);
+    y += r.adv;
+  }
+  c.globalAlpha = 1;
+}
+function fit(c, txt, maxW, size, weight) { let s = size; c.font = `${weight} ${s}px "Noto Sans KR", sans-serif`; while (c.measureText(txt).width > maxW && s > 20) { s -= 4; c.font = `${weight} ${s}px "Noto Sans KR", sans-serif`; } }
+function drawFor(cv) { const p = open?.post?.id === cv.dataset.id ? { ...open.post, ...collect() } : state.posts.find((x) => x.id === cv.dataset.id); if (p) drawThumb(cv, p); }
+// 카드 썸네일도 PNG와 같은 캔버스로 그려 화면과 다운로드 결과가 같게 한다
+const thumbURLCache = new Map(), offCv = document.createElement("canvas"); offCv.width = offCv.height = 1080;
+let drawQueue = Promise.resolve();
+function thumbURL(p) {
+  const key = [p.thumbH, p.thumbT1, p.thumbT2, p.thumbT3, p.thumbSub, state.thumbBgVer, !!bgCache.img, JSON.stringify(curFmt())].join("|");
+  if (!thumbURLCache.has(key)) thumbURLCache.set(key, (drawQueue = drawQueue.then(async () => { await drawThumb(offCv, p); return offCv.toDataURL("image/jpeg", 0.82); })));
+  return thumbURLCache.get(key);
+}
+function miniHTML(p, tag) {
+  return `<div class="mini" style="padding:0">${tag ? `<span class="tag">${tag}</span>` : ""}<img data-thumb="${esc(p.id)}" alt="" style="width:100%;height:100%;display:block"></div>`;
+}
+function fillMinis() {
+  $$("img[data-thumb]").forEach((img) => { const p = state.posts.find((x) => x.id === img.dataset.thumb); if (p) thumbURL(p).then((u) => (img.src = u)); });
+}
+
+// ---------- 생성 작업 시작 (브라우저에서 직접 호출) ----------
+async function startJob(job) {
+  if (!job) return null;
+  let reason = null;
+  try {
+    const res = await fetch("/.netlify/functions/generate-background", {
+      method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + token }, body: JSON.stringify(job),
+    });
+    if (!res.ok && res.status !== 202) reason = `${res.status}${res.redirected || /login|edge-access/i.test(res.url) ? ": Netlify 로그인 필요" : ""}`;
+  } catch (e) { reason = e.message; }
+  if (reason) { await api("jobs/failed", { job, reason }).catch(() => {}); return `생성 작업을 시작하지 못했습니다 (${reason}). 잠시 후 [다시 시도]를 눌러 주세요.`; }
+  return null;
+}
+
+// ---------- 대시보드 ----------
+const kstMs = (s) => Date.parse(String(s).replace(" ", "T") + ":00+09:00");
+function stuck(r) {
+  if (r.state === "대기") return Date.now() - kstMs(r.requestedAt) > 2 * 60000;
+  if (r.state === "작성중") return Date.now() - kstMs(r.startedAt || r.requestedAt) > 20 * 60000;
+  return false;
+}
+const TABS = ["전체", "생성 중", "초안", "수정요청", "승인", "발행완료", "보류"];
+function renderDash() {
+  const pending = state.requests, active = pending.filter((r) => r.state !== "실패");
+  const count = (t) => t === "전체" ? state.posts.length + pending.length : t === "생성 중" ? active.length : state.posts.filter((p) => p.status === t).length;
+  $("#tabs").innerHTML = TABS.map((t) => `<button class="${t === tab ? "on" : ""}" data-t="${t}">${t}<span class="n">${count(t)}</span></button>`).join("");
+  $$("#tabs button").forEach((b) => (b.onclick = () => { tab = b.dataset.t; renderDash(); }));
+  const reqCards = (tab === "전체" || tab === "생성 중") ? pending.map((r) => `
+    <div class="post waitcard" ${r.state === "실패" ? 'style="border-color:#f2b8b8"' : ""}><div class="mini" ${r.state === "실패" ? 'style="background:#3a1414"' : ""}>${r.state === "실패" ? "생성 실패 — 사유 확인 후 다시 시도" : `<span><span class="spin"></span>${r.state === "작성중" ? "초안을 쓰는 중…" : "곧 시작합니다"}</span>`}</div>
+      <div class="meta"><span class="badge b-${esc(r.state)}">${esc(r.state)}</span>
+      <div class="t">${r.type === "키워드" ? "키워드: " + esc(r.keyword) : r.type === "자료" ? `${(r.sourceIds || []).length ? `자료: 파일 ${r.sourceIds.length}개` : `링크: ${(r.urls || []).length}개`}${r.keyword ? " · " + esc(r.keyword) : ""}` : "트렌드 자동생성"}</div>
+      <div class="sub">${esc(r.postId)} · ${esc(r.requester)} · ${esc(r.requestedAt)}</div>${r.note ? `<div class="sub" style="color:${r.state === "실패" ? "var(--bad)" : "inherit"}">${esc(r.note)}</div>` : ""}
+      <div class="row">${r.state === "실패" || stuck(r) ? `<button class="btn sm ghost" data-retry="${esc(r.requestId)}">다시 시도</button>` : ""}<button class="btn sm ghost" data-dismiss="${esc(r.requestId)}">${r.state === "실패" ? "닫기" : "요청 취소"}</button></div>
+      ${stuck(r) ? `<div class="sub" style="color:var(--warn)">${r.state === "대기" ? "작업이 시작되지 않았습니다." : "20분 넘게 끝나지 않았습니다."} 다시 시도하거나 취소하세요.</div>` : ""}</div></div>`).join("") : "";
+  const list = tab === "생성 중" ? [] : state.posts.filter((p) => tab === "전체" || p.status === tab);
+  const postCards = list.map((p) => `
+    <div class="post" data-id="${esc(p.id)}">${miniHTML(p, p.rewriting ? "다시 쓰는 중" : "")}
+      <div class="meta"><span class="badge b-${esc(p.status)}">${esc(p.status)}</span>
+      <div class="t">${esc(p.title)}</div>
+      <div class="sub">${esc(p.id)} · 발행 예정 ${esc(p.publishDate || "-")} · v${p.version}</div></div></div>`).join("");
+  $("#grid").innerHTML = reqCards + postCards || `<div class="empty">아직 글이 없습니다. 위에서 새 글을 요청해 보세요.</div>`;
+  fillMinis();
+  $$("#grid .post[data-id]").forEach((el) => (el.onclick = () => openPost(el.dataset.id)));
+  $$("[data-retry]").forEach((b) => (b.onclick = async () => { try { const r = await api(`requests/${b.dataset.retry}/retry`, {}); toast((await startJob(r.job)) || "다시 시도합니다"); load(); } catch (e) { toast(e.message); } }));
+  $$("[data-dismiss]").forEach((b) => (b.onclick = async () => { if (b.textContent === "요청 취소" && !confirm("이 요청을 취소할까요?")) return; try { await api(`requests/${b.dataset.dismiss}/dismiss`, {}); toast("요청을 정리했습니다"); load(); } catch (e) { toast(e.message); } }));
+}
+
+$("#trendBtn").onclick = async () => {
+  $("#trendBtn").disabled = true;
+  try { const r = await api("requests", { type: "트렌드" }); toast((await startJob(r.job)) || "요청했습니다. 보통 1~3분 뒤 초안이 올라옵니다."); tab = "생성 중"; load(); }
+  catch (e) { toast(e.message); } finally { $("#trendBtn").disabled = false; }
+};
+async function requestKeyword(force) {
+  const keyword = $("#kw").value.trim(); if (!keyword) return toast("키워드를 입력해 주세요");
+  $("#kwBtn").disabled = true;
+  try {
+    const r = await api("requests", { type: "키워드", keyword, memo: $("#kwMemo").value, webSearch: $("#kwWeb").checked, force });
+    if (r.status === 409) return showDup(r.duplicates);
+    $("#kw").value = ""; $("#kwMemo").value = ""; $("#kwWeb").checked = !!state.keywordSearchDefault; $("#dupBox").classList.add("hidden");
+    toast((await startJob(r.job)) || "요청했습니다. 보통 1~3분 뒤 초안이 올라옵니다."); tab = "생성 중"; load();
+  } catch (e) { toast(e.message); } finally { $("#kwBtn").disabled = false; }
+}
+function showDup(d, box = $("#dupBox"), onForce = () => requestKeyword(true)) {
+  box.innerHTML = `<b>이미 다룬 주제와 겹칠 수 있어요</b><ul>${d.map((x) => `<li>${esc(x.ref)} ${esc(x.label)} “${esc(x.text)}” — ${esc(x.reason)}</li>`).join("")}</ul>
+    <div class="row"><button class="btn ghost sm" data-dupedit>키워드 바꾸기</button><button class="btn warn sm" data-dupforce>그래도 요청 (다른 각도로 작성)</button></div>`;
+  box.classList.remove("hidden");
+  $("[data-dupedit]", box).onclick = () => box.classList.add("hidden");
+  $("[data-dupforce]", box).onclick = onForce;
+}
+$("#kwBtn").onclick = () => requestKeyword(false);
+$("#kw").addEventListener("keydown", (e) => e.key === "Enter" && requestKeyword(false));
+let dupTimer;
+$("#kw").addEventListener("input", () => {
+  clearTimeout(dupTimer); $("#dupBox").classList.add("hidden");
+  const k = $("#kw").value.trim(); if (k.length < 2) return;
+  dupTimer = setTimeout(async () => { try { const r = await api("check", { keyword: k }); if (r.duplicates?.length && $("#kw").value.trim() === k) showDup(r.duplicates); } catch {} }, 700);
+});
+
+// ---------- 자료로 생성 ----------
+const SRC = { items: [] }; // {file, path, skip?}
+const MAX_FILES = 20, MAX_BYTES = 4 * 1024 * 1024;
+const TEXT_EXT = ["txt", "md", "csv", "tsv", "json", "html", "htm", "xml"], ZIP_EXT = ["docx", "pptx", "xlsx"], IMG_EXT = ["jpg", "jpeg", "png", "webp", "gif"];
+const extOf = (n) => (n.split(".").pop() || "").toLowerCase();
+function addSrcFiles(list) {
+  for (const { file, path } of list) {
+    if (file.name.startsWith(".") || SRC.items.some((x) => x.path === path)) continue;
+    const ext = extOf(file.name);
+    let skip = null;
+    if (![...TEXT_EXT, ...ZIP_EXT, ...IMG_EXT, "pdf"].includes(ext)) skip = "지원하지 않는 형식";
+    else if (file.size > MAX_BYTES && !IMG_EXT.includes(ext)) skip = "4MB 초과 — 나눠서 올려 주세요";
+    SRC.items.push({ file, path, skip });
+  }
+  renderSrc();
+}
+function renderSrc() {
+  const ok = SRC.items.filter((x) => !x.skip);
+  $("#srcList").innerHTML = SRC.items.map((x, i) => `<li><span class="n ${x.skip ? "skip" : ""}" title="${esc(x.path)}">${esc(x.path)}</span><span class="sub ${x.skip ? "skip" : ""}">${x.skip ? esc(x.skip) : Math.ceil(x.file.size / 1024) + "KB"}</span><button data-rm="${i}" title="빼기">×</button></li>`).join("");
+  $$("[data-rm]").forEach((b) => (b.onclick = () => { SRC.items.splice(+b.dataset.rm, 1); renderSrc(); }));
+  $("#srcProg").textContent = SRC.items.length ? `사용할 파일 ${ok.length}개${ok.length > MAX_FILES ? ` (최대 ${MAX_FILES}개까지만 사용)` : ""}` : "";
+}
+$("#srcPick").onclick = (e) => { e.preventDefault(); $("#srcFile").click(); };
+$("#srcPickDir").onclick = (e) => { e.preventDefault(); $("#srcDir").click(); };
+$("#srcFile").onchange = (e) => { addSrcFiles([...e.target.files].map((f) => ({ file: f, path: f.name }))); e.target.value = ""; };
+$("#srcDir").onchange = (e) => { addSrcFiles([...e.target.files].map((f) => ({ file: f, path: f.webkitRelativePath || f.name }))); e.target.value = ""; };
+const drop = $("#srcDrop");
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, () => drop.classList.remove("over")));
+drop.addEventListener("drop", async (e) => {
+  e.preventDefault();
+  const out = [];
+  const walk = (entry, prefix) => new Promise((res) => {
+    if (entry.isFile) entry.file((f) => { out.push({ file: f, path: prefix + f.name }); res(); }, () => res());
+    else if (entry.isDirectory) {
+      const rd = entry.createReader(), all = [];
+      const read = () => rd.readEntries(async (ents) => { if (!ents.length) { for (const en of all) await walk(en, prefix + entry.name + "/"); res(); } else { all.push(...ents); read(); } }, () => res());
+      read();
+    } else res();
+  });
+  const entries = [...e.dataTransfer.items].map((it) => it.webkitGetAsEntry && it.webkitGetAsEntry()).filter(Boolean);
+  if (entries.length) { for (const en of entries) await walk(en, ""); } else out.push(...[...e.dataTransfer.files].map((f) => ({ file: f, path: f.name })));
+  addSrcFiles(out);
+});
+
+let jszipP = null;
+const loadJSZip = () => jszipP ||= new Promise((ok, no) => { const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"; s.onload = () => ok(window.JSZip); s.onerror = () => no(new Error("문서 읽기 도구를 불러오지 못했습니다")); document.head.appendChild(s); });
+const xmlDoc = (s) => new DOMParser().parseFromString(s, "application/xml");
+const textsOf = (node, tag) => [...node.getElementsByTagName(tag)].map((n) => n.textContent);
+const natural = (a, b) => (parseInt(a.match(/\d+/)) || 0) - (parseInt(b.match(/\d+/)) || 0);
+async function extractText(file, ext) {
+  if (["html", "htm"].includes(ext)) { const d = new DOMParser().parseFromString(await file.text(), "text/html"); d.querySelectorAll("script,style,noscript").forEach((n) => n.remove()); return d.body?.innerText || d.body?.textContent || ""; }
+  if (TEXT_EXT.includes(ext)) return await file.text();
+  const zip = await (await loadJSZip()).loadAsync(file);
+  if (ext === "docx") {
+    const x = xmlDoc(await zip.file("word/document.xml").async("string"));
+    return [...x.getElementsByTagName("w:p")].map((p) => textsOf(p, "w:t").join("")).filter(Boolean).join("\n");
+  }
+  if (ext === "pptx") {
+    const names = Object.keys(zip.files).filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n)).sort(natural);
+    const parts = [];
+    for (const [i, n] of names.entries()) {
+      const x = xmlDoc(await zip.file(n).async("string"));
+      parts.push(`[슬라이드 ${i + 1}]\n` + [...x.getElementsByTagName("a:p")].map((p) => textsOf(p, "a:t").join("")).filter(Boolean).join("\n"));
+    }
+    return parts.join("\n\n");
+  }
+  if (ext === "xlsx") {
+    const ss = zip.file("xl/sharedStrings.xml") ? [...xmlDoc(await zip.file("xl/sharedStrings.xml").async("string")).getElementsByTagName("si")].map((si) => textsOf(si, "t").join("")) : [];
+    const names = Object.keys(zip.files).filter((n) => /^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort(natural);
+    const parts = [];
+    for (const [i, n] of names.entries()) {
+      const x = xmlDoc(await zip.file(n).async("string"));
+      const rows = [...x.getElementsByTagName("row")].map((row) => [...row.getElementsByTagName("c")].map((c) => {
+        const v = c.getElementsByTagName("v")[0]?.textContent ?? textsOf(c, "t").join("");
+        return c.getAttribute("t") === "s" ? ss[+v] ?? "" : v;
+      }).join("\t"));
+      parts.push(`[시트 ${i + 1}]\n${rows.join("\n")}`);
+    }
+    return parts.join("\n\n");
+  }
+  return "";
+}
+function b64(buf) { let s = ""; const b = new Uint8Array(buf); for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); }
+async function imagePayload(file) {
+  const bmp = await createImageBitmap(file);
+  if (file.size <= MAX_BYTES && Math.max(bmp.width, bmp.height) <= 2000 && ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) return { mediaType: file.type, data: b64(await file.arrayBuffer()) };
+  const s = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), cv = document.createElement("canvas");
+  cv.width = Math.round(bmp.width * s); cv.height = Math.round(bmp.height * s); cv.getContext("2d").drawImage(bmp, 0, 0, cv.width, cv.height);
+  const blob = await new Promise((ok) => cv.toBlob(ok, "image/jpeg", 0.85));
+  return { mediaType: "image/jpeg", data: b64(await blob.arrayBuffer()) };
+}
+async function uploadSource(item) {
+  const ext = extOf(item.file.name), name = item.path;
+  if (ext === "pdf") return api("sources", { kind: "pdf", name, data: b64(await item.file.arrayBuffer()) });
+  if (IMG_EXT.includes(ext)) return api("sources", { kind: "image", name, ...(await imagePayload(item.file)) });
+  const text = (await extractText(item.file, ext)).replace(/\n{3,}/g, "\n\n").trim();
+  if (!text) throw new Error(`${name}: 읽을 수 있는 글자가 없습니다`);
+  return api("sources", { kind: "text", name, text });
+}
+// 파일·폴더 → 자료 요청
+async function requestFiles(force) {
+  const files = SRC.items.filter((x) => !x.skip).slice(0, MAX_FILES);
+  if (!files.length) return toast("올릴 파일이나 폴더를 넣어 주세요");
+  $("#srcBtn").disabled = true; $("#srcDup").classList.add("hidden");
+  try {
+    if (!force || !SRC.uploaded) {
+      SRC.uploaded = [];
+      for (const [i, it] of files.entries()) {
+        $("#srcProg").textContent = `자료 올리는 중 ${i + 1}/${files.length} — ${it.path}`;
+        SRC.uploaded.push((await uploadSource(it)).source.sid);
+      }
+    }
+    $("#srcProg").textContent = "요청 중…";
+    const r = await api("requests", { type: "자료", sourceIds: SRC.uploaded, urls: [], keyword: "", memo: "", webSearch: false, force });
+    if (r.status === 409) { $("#srcProg").textContent = ""; return showDup(r.duplicates, $("#srcDup"), () => requestFiles(true)); }
+    SRC.items = []; SRC.uploaded = null; renderSrc();
+    toast((await startJob(r.job)) || "요청했습니다. 자료 양에 따라 1~5분 뒤 초안이 올라옵니다."); tab = "생성 중"; load();
+  } catch (e) { toast(e.message); $("#srcProg").textContent = ""; } finally { $("#srcBtn").disabled = false; }
+}
+$("#srcBtn").onclick = () => requestFiles(false);
+
+// 링크 → 링크에서 가져오기
+async function requestLinks(force) {
+  const urls = [...new Set($("#lnkUrls").value.split(/\s+/).map((u) => u.trim()).filter(Boolean))];
+  if (!urls.length) return toast("링크를 하나 이상 넣어 주세요");
+  if (urls.length > 10) return toast("링크는 한 번에 10개까지 넣을 수 있습니다");
+  const bad = urls.find((u) => !/^https?:\/\/\S+$/i.test(u)); if (bad) return toast(`링크는 http:// 또는 https://로 시작해야 합니다: ${bad}`);
+  $("#lnkBtn").disabled = true; $("#lnkDup").classList.add("hidden"); $("#lnkProg").textContent = "요청 중…";
+  try {
+    const r = await api("requests", { type: "자료", sourceIds: [], urls, keyword: "", memo: "", webSearch: false, force });
+    if (r.status === 409) { $("#lnkProg").textContent = ""; return showDup(r.duplicates, $("#lnkDup"), () => requestLinks(true)); }
+    $("#lnkUrls").value = ""; $("#lnkProg").textContent = "";
+    toast((await startJob(r.job)) || "요청했습니다. 링크를 읽고 1~5분 뒤 초안이 올라옵니다."); tab = "생성 중"; load();
+  } catch (e) { toast(e.message); $("#lnkProg").textContent = ""; } finally { $("#lnkBtn").disabled = false; }
+}
+$("#lnkBtn").onclick = () => requestLinks(false);
+
+// ---------- 아카이브 ----------
+function fillSelect(sel, values) { const cur = sel.value; sel.innerHTML = `<option value="">전체</option>` + [...new Set(values.filter(Boolean))].sort().map((v) => `<option ${v === cur ? "selected" : ""}>${esc(v)}</option>`).join(""); }
+function renderArchive() {
+  const P = state.posts;
+  fillSelect($("#as"), ["초안", "승인", "수정요청", "발행완료", "보류"]);
+  fillSelect($("#ar"), P.map((p) => p.requester)); fillSelect($("#aa"), P.map((p) => p.approvedBy)); fillSelect($("#am"), P.map((p) => (p.createdAt || "").slice(0, 7)));
+  const q = $("#aq").value.trim().toLowerCase();
+  const rows = P.filter((p) => (!q || [p.id, p.title, p.keyword, p.tags, p.bodyPreview].join(" ").toLowerCase().includes(q))
+    && (!$("#as").value || p.status === $("#as").value) && (!$("#ar").value || p.requester === $("#ar").value)
+    && (!$("#aa").value || p.approvedBy === $("#aa").value) && (!$("#am").value || (p.createdAt || "").startsWith($("#am").value)));
+  $("#aCount").textContent = `${rows.length}건 / 전체 ${P.length}건`;
+  $("#aTable").innerHTML = `<tr><th>ID</th><th>상태</th><th>제목</th><th>키워드</th><th>요청</th><th>승인</th><th>발행</th><th>최근 수정</th></tr>` +
+    (rows.map((p) => `<tr class="click" data-id="${esc(p.id)}"><td>${esc(p.id)}</td><td><span class="badge b-${esc(p.status)}">${esc(p.status)}</span></td>
+      <td><b>${esc(p.title)}</b></td><td class="sub">${esc(p.keyword)}</td><td>${esc(p.requester)}</td><td>${esc(p.approvedBy || "")}</td>
+      <td>${p.publishUrl ? `<a href="${esc(p.publishUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc((p.publishedAt || p.publishDate || "").slice(0, 10))} ↗</a>` : `<span class="sub">예정 ${esc(p.publishDate || "-")}</span>`}</td>
+      <td class="sub">${esc(p.updatedBy)} ${esc(p.updatedAt)} · v${p.version}</td></tr>`).join("") || `<tr><td colspan="8" class="empty">조건에 맞는 글이 없습니다</td></tr>`);
+  $$("#aTable tr.click").forEach((tr) => (tr.onclick = () => openPost(tr.dataset.id)));
+}
+["#aq", "#as", "#ar", "#aa", "#am"].forEach((s) => $(s).addEventListener("input", renderArchive));
+const csv = () => { location.href = "/api/export.csv?t=" + encodeURIComponent(token); };
+$("#csvBtn").onclick = csv; $("#csvBtn2").onclick = csv;
+
+// ---------- 히스토리 ----------
+async function loadHistory() {
+  try { const r = await api("activity?limit=1000"); activity = r.items.filter((a) => a.action !== "로그인"); renderHistory(); } catch (e) { toast(e.message); }
+}
+function renderHistory() {
+  fillSelect($("#hp"), activity.map((a) => a.by)); fillSelect($("#ht"), activity.map((a) => a.action));
+  const q = $("#hq").value.trim().toLowerCase(), f = $("#hf").value, e = $("#he").value;
+  const rows = activity.filter((a) => (!q || [a.target, a.detail].join(" ").toLowerCase().includes(q)) && (!$("#hp").value || a.by === $("#hp").value)
+    && (!$("#ht").value || a.action === $("#ht").value) && (!f || a.at.slice(0, 10) >= f) && (!e || a.at.slice(0, 10) <= e));
+  $("#hCount").textContent = `${rows.length}건`;
+  let html = "", day = "";
+  for (const a of rows) {
+    const d = a.at.slice(0, 10);
+    if (d !== day) { if (day) html += "</div>"; day = d; html += `<div class="tl-day">${d}</div><div class="tl">`; }
+    const target = /^B-\d{4}-\d+$/.test(a.target) ? `<a href="#" data-open="${esc(a.target)}">${esc(a.target)}</a>` : `<span class="sub">${esc(a.target)}</span>`;
+    html += `<div class="tl-item"><span class="time">${esc(a.at.slice(11))}</span><span class="who">${esc(a.by)}</span><span class="act act-${esc(a.action).replace(/ /g, "_")}">${esc(a.action)}</span><span>${target} ${esc(a.detail)}</span></div>`;
+  }
+  $("#timeline").innerHTML = html ? html + "</div>" : `<div class="empty">기록이 없습니다</div>`;
+  $$("[data-open]").forEach((x) => (x.onclick = (ev) => { ev.preventDefault(); openPost(x.dataset.open); }));
+}
+["#hq", "#hp", "#ht", "#hf", "#he"].forEach((s) => $(s).addEventListener("input", renderHistory));
+$("#hReload").onclick = loadHistory;
+
+// ---------- 설정 ----------
+let settingsCache = null;
+async function loadSettings() {
+  try {
+    const r = await api("settings"); settingsCache = r;
+    $("#adminWarn").classList.toggle("hidden", !!state.adminPasswordSet);
+    $("#sModel").value = r.settings.model; $("#sResearch").value = r.settings.researchModel || ""; $("#sSearches").value = String(r.settings.maxSearches ?? 3); $("#sKwSearch").checked = r.settings.keywordSearch !== false;
+    api("usage").then((u) => { $("#usage").innerHTML = u.months.length ? `<table class="list"><tr><th>월</th><th>호출 건수</th><th>추정 비용</th><th>건당 평균</th></tr>${u.months.map((m) => `<tr><td>${m.month}</td><td>${m.count}</td><td>$${m.usd.toFixed(2)}</td><td>$${(m.usd / m.count).toFixed(3)}</td></tr>`).join("")}</table>` : "아직 기록이 없습니다 (이번 업데이트 이후 생성분부터 기록)"; }).catch(() => {}); $("#sRules").value = r.settings.rules; $("#sTopics").value = r.settings.coveredTopics; $("#sCta").value = r.settings.cta;
+    const raw = $("#bgRaw");
+    if (state.hasThumbBg) { raw.style.backgroundImage = `url('/api/thumb-bg?v=${encodeURIComponent(state.thumbBgVer)}')`; raw.textContent = ""; }
+    else { raw.style.backgroundImage = ""; raw.textContent = "기본 배경 사용 중"; }
+    // 고객 프로필
+    const pf = r.settings.profile || {};
+    for (const [id, k] of PF_FIELDS) $("#" + id).value = pf[k] ?? "";
+    $("#pfWarn").textContent = pf.company ? "" : "회사·브랜드명이 비어 있습니다 — 먼저 프로필을 채워 주세요.";
+    // 썸네일 형식
+    fmtEdit = JSON.parse(JSON.stringify(r.settings.thumbFormat || DEF_FMT)); renderFmt();
+    // AI 사진
+    $("#imgEnv").innerHTML = r.imageEnabled ? `<b style="color:#106b10">Cloudflare 연결 정보가 설정되어 있습니다.</b>` : `<b style="color:var(--bad)">아직 사용할 수 없습니다 — Netlify 환경변수 CF_ACCOUNT_ID, CF_API_TOKEN을 추가하고 재배포하세요.</b>`;
+    $("#sImgGuide").value = r.settings.imageGuide || "";
+    $("#sImgModel").innerHTML = Object.entries(r.imageModels || {}).map(([id, m]) => `<option value="${esc(id)}">${esc(m.label)} · 약 $${m.usd}/장</option>`).join("");
+    $("#sImgModel").value = r.settings.imageModel; $("#sImgW").value = r.settings.imageWidth; $("#sImgH").value = r.settings.imageHeight;
+    imgModelNote();
+    drawSample();
+  } catch (e) { toast(e.message); }
+}
+const SAMPLE = { thumbH: "처음이라면,", thumbT1: "이것부터", thumbT2: "확인하세요", thumbT3: "5분 정리", thumbSub: "초보자를 위한 핵심 체크리스트" };
+function drawSample() { drawThumb($("#bgPreview"), SAMPLE); drawFmtPreview(); }
+
+// ---------- 고객 프로필·설정 내보내기/가져오기 ----------
+const PF_FIELDS = [["pfAppName", "appName"], ["pfLogo", "logoText"], ["pfAccent", "accent"], ["pfBlog", "naverBlogId"], ["pfCompany", "company"], ["pfIndustry", "industry"], ["pfProducts", "products"], ["pfAudience", "audience"], ["pfTone", "tone"], ["pfTopics", "topics"], ["pfAvoid", "avoid"], ["pfTags", "tags"]];
+$("#pfSave").onclick = async () => {
+  try { await api("settings", { profile: Object.fromEntries(PF_FIELDS.map(([id, k]) => [k, $("#" + id).value])) }); thumbURLCache.clear(); await load(); await loadSettings(); toast("고객 프로필을 저장했습니다. 다음 글부터 적용됩니다."); } catch (e) { toast(e.message); }
+};
+const CFG_KEYS = ["profile", "rules", "cta", "coveredTopics", "thumbFormat", "imageGuide", "imageModel", "imageWidth", "imageHeight", "model", "researchModel", "maxSearches", "keywordSearch"];
+$("#cfgExport").onclick = async () => {
+  try {
+    const r = await api("settings"), out = { _type: "blog-studio-settings", _exportedAt: new Date().toISOString() };
+    for (const k of CFG_KEYS) out[k] = r.settings[k];
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }));
+    a.download = `settings_${(r.settings.profile?.company || "customer").replace(/[^\w가-힣-]/g, "_")}_${new Date().toISOString().slice(0, 10)}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  } catch (e) { toast(e.message); }
+};
+$("#cfgImportBtn").onclick = () => $("#cfgImport").click();
+$("#cfgImport").onchange = async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text());
+    if (j._type !== "blog-studio-settings") throw new Error("이 앱에서 내보낸 설정 파일이 아닙니다");
+    if (!confirm(`'${j.profile?.company || "이름 없음"}' 설정을 가져와 현재 설정을 덮어쓸까요? (글·사진·썸네일 배경은 그대로입니다)`)) return;
+    const body = {}; for (const k of CFG_KEYS) if (k in j) body[k] = j[k];
+    await api("settings", body); thumbURLCache.clear(); await load(); await loadSettings(); toast("설정을 가져왔습니다");
+  } catch (err) { toast(err.message || "파일을 읽지 못했습니다"); }
+};
+
+// ---------- 썸네일 문구 형식 편집 ----------
+let fmtEdit = null, fmtSample = { ...SAMPLE };
+function drawFmtPreview() { if (fmtEdit) drawThumb($("#fmtPreview"), fmtSample, fmtEdit); }
+function renderFmt() {
+  const F = fmtEdit, rowHTML = (st, key, name, removable) => `<tr data-k="${key}">
+    <td>${name}</td><td><input data-p="label" value="${esc(st.label)}" maxlength="20" style="min-width:80px"></td><td><input type="color" data-p="color" value="${esc(st.color)}"></td>
+    <td><input type="number" data-p="size" value="${st.size}" min="12" max="220" style="width:76px"></td>
+    <td><select data-p="weight">${[[400, "보통"], [700, "굵게"], [900, "아주 굵게"]].map(([v, n]) => `<option value="${v}" ${+st.weight === v ? "selected" : ""}>${n}</option>`).join("")}</select></td>
+    <td><input type="number" data-p="maxChars" value="${st.maxChars}" min="1" max="40" style="width:66px"></td>
+    <td><input type="number" data-p="opacity" value="${st.opacity}" min="0.1" max="1" step="0.05" style="width:70px"></td>
+    <td><input data-s="${key === "sub" ? "thumbSub" : LINE_KEYS[+key]}" value="${esc(fmtSample[key === "sub" ? "thumbSub" : LINE_KEYS[+key]] || "")}" style="min-width:110px"></td>
+    <td>${removable ? `<button class="btn ghost sm" data-rm="${key}">삭제</button>` : ""}</td></tr>`;
+  $("#fmtLines").innerHTML = F.lines.map((l, i) => rowHTML(l, i, `${i + 1}줄`, F.lines.length > 1)).join("") + (F.subtitle.enabled ? rowHTML(F.subtitle, "sub", "부제", false) : "");
+  $("#fmtAdd").disabled = F.lines.length >= 4; $("#fmtAdd").textContent = `+ 줄 추가 (문구 ${F.lines.length}줄)`;
+  $("#fmtSubOn").checked = !!F.subtitle.enabled;
+  $("#fmtAlign").value = F.align; $("#fmtVAlign").value = F.vAlign; $("#fmtTop").value = F.top; $("#fmtMarginX").value = F.marginX; $("#fmtLH").value = F.lineHeight; $("#fmtSubGap").value = F.subGap;
+  $$("#fmtLines [data-p]").forEach((el) => (el.oninput = () => {
+    const k = el.closest("tr").dataset.k, st = k === "sub" ? F.subtitle : F.lines[+k], pn = el.dataset.p;
+    st[pn] = ["label", "color"].includes(pn) ? el.value : +el.value; drawFmtPreview();
+  }));
+  $$("#fmtLines [data-s]").forEach((el) => (el.oninput = () => { fmtSample[el.dataset.s] = el.value; drawFmtPreview(); }));
+  $$("#fmtLines [data-rm]").forEach((b) => (b.onclick = () => { F.lines.splice(+b.dataset.rm, 1); renderFmt(); }));
+  drawFmtPreview();
+}
+$("#fmtAdd").onclick = () => { if (fmtEdit.lines.length < 4) { fmtEdit.lines.push({ ...fmtEdit.lines.at(-1), label: `제목 ${fmtEdit.lines.length}줄` }); renderFmt(); } };
+$("#fmtSubOn").onchange = (e) => { fmtEdit.subtitle.enabled = e.target.checked; renderFmt(); };
+[["fmtAlign", "align"], ["fmtVAlign", "vAlign"], ["fmtTop", "top"], ["fmtMarginX", "marginX"], ["fmtLH", "lineHeight"], ["fmtSubGap", "subGap"]].forEach(([id, k]) => ($("#" + id).oninput = (e) => { fmtEdit[k] = e.target.type === "number" ? +e.target.value : e.target.value; drawFmtPreview(); }));
+$("#fmtReset").onclick = () => { if (settingsCache && confirm("썸네일 문구 형식을 기본값으로 바꿀까요? (저장을 눌러야 적용)")) { fmtEdit = JSON.parse(JSON.stringify(settingsCache.defaults.thumbFormat || DEF_FMT)); renderFmt(); } };
+$("#fmtSave").onclick = async () => {
+  try { const r = await api("settings", { thumbFormat: fmtEdit }); fmtEdit = JSON.parse(JSON.stringify(r.settings?.thumbFormat || fmtEdit)); thumbURLCache.clear(); await load(); renderFmt(); drawSample(); toast("썸네일 형식을 저장했습니다. 모든 글의 썸네일에 적용됩니다."); } catch (e) { toast(e.message); }
+};
+
+// ---------- AI 사진 설정 ----------
+function imgModelNote() {
+  const m = settingsCache?.imageModels?.[$("#sImgModel").value];
+  $("#imgModelNote").textContent = m ? (m.sizes ? "이 모델은 위 가로·세로 크기로 만듭니다." : "이 모델은 크기를 고를 수 없어 1024×1024 정사각형으로 만듭니다 (가장 저렴·빠름).") : "";
+}
+$("#sImgModel").onchange = imgModelNote;
+const imgSettings = () => ({ imageGuide: $("#sImgGuide").value, imageModel: $("#sImgModel").value, imageWidth: +$("#sImgW").value, imageHeight: +$("#sImgH").value });
+$("#imgSave").onclick = async () => { try { await api("settings", imgSettings()); toast("사진 설정을 저장했습니다"); } catch (e) { toast(e.message); } };
+$("#imgGuideReset").onclick = () => { if (settingsCache && confirm("사진 지침을 기본값으로 바꿀까요? (저장을 눌러야 적용)")) $("#sImgGuide").value = settingsCache.defaults.imageGuide; };
+$("#imgTest").onclick = async () => {
+  const out = $("#imgTestOut"), btn = $("#imgTest"); btn.disabled = true;
+  try {
+    await api("settings", imgSettings());
+    const r = await api("settings/image-test", { subject: $("#imgTestSubject").value });
+    out.innerHTML = `<span class="spin"></span>만드는 중… (30초~1분)`;
+    const err = await startImageJob(r.job); if (err) throw new Error(err);
+    for (let i = 0; i < 45; i++) {
+      await new Promise((ok) => setTimeout(ok, 4000));
+      const t = await api("settings/image-test");
+      if (t.state === "done") { out.innerHTML = `<a href="${imgSrc(t.iid)}" target="_blank" rel="noopener"><img src="${imgSrc(t.iid)}" alt="" style="width:100%;border-radius:8px;margin:6px 0"></a><div>약 $${Number(t.usd).toFixed(3)} · ${esc(t.model)}</div><div style="margin-top:4px">사용된 프롬프트: ${esc(t.prompt)}</div>`; return; }
+      if (t.state === "error") throw new Error(t.error);
+    }
+    throw new Error("시간이 너무 오래 걸립니다. 잠시 후 다시 시도해 주세요.");
+  } catch (e) { out.innerHTML = `<span style="color:var(--bad)">${esc(e.message)}</span>`; } finally { btn.disabled = false; }
+};
+$("#bgReset").onclick = async () => {
+  if (!confirm("올린 배경을 지우고 기본 배경으로 돌아갈까요?")) return;
+  try { await api("thumb-bg/reset", {}); toast("기본 배경으로 바꿨습니다"); await load(); loadSettings(); } catch (e) { toast(e.message); }
+};
+$("#apiTest").onclick = async () => {
+  $("#apiTest").disabled = true; $("#apiResult").textContent = "확인 중…";
+  try { const r = await api("settings/test", { model: $("#sModel").value.trim(), researchModel: $("#sResearch").value.trim() }); $("#apiResult").innerHTML = `<span style="color:${r.ok ? "#106b10" : "var(--bad)"}">${esc(r.message)}</span>`; }
+  catch (e) { $("#apiResult").textContent = e.message; } finally { $("#apiTest").disabled = false; }
+};
+$("#sSave2").onclick = async () => {
+  try { await api("settings", { model: $("#sModel").value.trim(), researchModel: $("#sResearch").value.trim(), maxSearches: +$("#sSearches").value, keywordSearch: $("#sKwSearch").checked }); toast("비용 설정을 저장했습니다"); } catch (e) { toast(e.message); }
+};
+$("#sSave").onclick = async () => {
+  try { await api("settings", { model: $("#sModel").value.trim(), researchModel: $("#sResearch").value.trim(), maxSearches: +$("#sSearches").value, keywordSearch: $("#sKwSearch").checked, rules: $("#sRules").value, coveredTopics: $("#sTopics").value, cta: $("#sCta").value }); toast("설정을 저장했습니다"); } catch (e) { toast(e.message); }
+};
+$("#sReset").onclick = () => { if (settingsCache && confirm("글쓰기 규칙을 기본값으로 바꿀까요? (저장을 눌러야 적용)")) $("#sRules").value = settingsCache.defaults.rules; };
+$("#bgUpload").onclick = async () => {
+  const f = $("#bgFile").files[0]; if (!f) return toast("이미지를 선택해 주세요");
+  if (f.size > 4 * 1024 * 1024) return toast("4MB 이하 이미지만 가능합니다");
+  const dataUrl = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
+  try { await api("thumb-bg", { dataUrl }); toast("썸네일 배경을 바꿨습니다. '올린 배경 원본'에 글자가 보이면 Canva에서 문구를 지운 이미지로 다시 올려 주세요."); await load(); loadSettings(); } catch (e) { toast(e.message); }
+};
+
+// ---------- 본문 변환·복사 ----------
+const linkify = (s) => s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+// mode "preview": 사진을 실제로 보여줌 / "copy": 네이버에 붙여넣을 때는 [사진 N] 자리표시로 바꿈
+const IMG_RE = /^\[\[사진:([\w-]+)\]\]$/;
+const imgSrc = (iid) => `/api/img/${iid}?t=${encodeURIComponent(token)}`;
+function photoOrder(body) { return String(body).split("\n").map((l) => l.trim().match(IMG_RE)?.[1]).filter(Boolean); }
+function bodyToHTML(body, mode = "copy", images = []) {
+  const out = []; let list = false, n = 0;
+  for (const raw of String(body).split("\n")) {
+    const s = raw.trim();
+    const im = s.match(IMG_RE);
+    if (im) {
+      if (list) { out.push("</ul>"); list = false; }
+      n++; const cap = images.find((x) => x.iid === im[1])?.caption || "";
+      out.push(mode === "preview" ? `<figure><img src="${imgSrc(im[1])}" alt="${esc(cap)}">${cap ? `<figcaption>${esc(cap)}</figcaption>` : ""}</figure>` : `<p>[사진 ${n}${cap ? `: ${esc(cap)}` : ""}]</p>`);
+      continue;
+    }
+    if (/^[-•]\s+/.test(s)) { if (!list) { out.push("<ul>"); list = true; } out.push(`<li>${linkify(esc(s.replace(/^[-•]\s+/, "")))}</li>`); continue; }
+    if (list) { out.push("</ul>"); list = false; }
+    if (!s) continue;
+    if (s.startsWith("## ")) out.push(`<h2>${esc(s.slice(3))}</h2>`); else out.push(`<p>${linkify(esc(s)).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</p>`);
+  }
+  if (list) out.push("</ul>");
+  return out.join("\n");
+}
+const bodyToText = (b) => { let n = 0; return String(b).replace(/^\[\[사진:[\w-]+\]\]$/gm, () => `[사진 ${++n}]`).replace(/^## /gm, "").replace(/\*\*(.+?)\*\*/g, "$1"); };
+async function copyRich(html, text, msg) {
+  try { await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }), "text/plain": new Blob([text], { type: "text/plain" }) })]); }
+  catch { await navigator.clipboard.writeText(text); }
+  toast(msg);
+}
+
+// ---------- 상세 ----------
+async function openPost(id) {
+  try { const r = await api(`posts/${id}`); open = r; renderDrawer(); } catch (e) { toast(e.message); }
+}
+function renderDrawer() {
+  const { post: p, versions } = open;
+  const ro = p.status === "발행완료" || p.rewriting;
+  const F = curFmt(), imgs = p.images || [], order = photoOrder(p.body), heads = String(p.body).split("\n").filter((l) => l.trim().startsWith("## ")).map((l) => l.trim().slice(3));
+  const posOpts = (first) => `${first}<option value="top">맨 위</option>${heads.map((h, i) => `<option value="${i}">'${esc(h.slice(0, 22))}' 아래</option>`).join("")}<option value="end">본문 끝 (CTA 앞)</option>`;
+  const busyImg = !!p.imagesGenerating, canImg = !ro && !busyImg;
+  const f = (k, label, extra = "") => `<label>${label}</label><input data-f="${k}" value="${esc(p[k])}" ${extra} ${ro ? "readonly" : ""}>`;
+  $("#drawerIn").innerHTML = `
+    <div class="dhead"><span class="badge b-${esc(p.status)}">${esc(p.status)}</span><h2>${esc(p.id)} <span class="sub">v${p.version}</span></h2><button class="btn ghost" id="closeD">닫기</button></div>
+    ${p.rewriting ? `<div class="dup"><span class="spin"></span>검토 의견을 반영해 다시 쓰는 중입니다. 끝나면 자동으로 새로고침됩니다.</div>` : ""}
+    ${p.rewriteError ? `<div class="dup">마지막 재작성 실패: ${esc(p.rewriteError)}</div>` : ""}
+    <div class="dgrid">
+      <div>
+        <canvas class="thumb" id="thumbCv" data-id="${esc(p.id)}" width="1080" height="1080"></canvas>
+        <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="dlPng">썸네일 PNG 다운로드</button>${p.canvaLink ? `<a class="sub" href="${esc(p.canvaLink)}" target="_blank" rel="noopener">이전 Canva 링크 ↗</a>` : ""}</div>
+        ${F.lines.map((l, i) => f(LINE_KEYS[i], `썸네일 ${esc(l.label)} (${l.maxChars}자)`, `maxlength="${l.maxChars * 2}"`)).join("")}${F.subtitle.enabled ? f("thumbSub", `썸네일 ${esc(F.subtitle.label)} (${F.subtitle.maxChars}자)`, `maxlength="${F.subtitle.maxChars * 2}"`) : ""}
+        <dl class="info">
+          <dt>키워드</dt><dd>${esc(p.keyword)}</dd>
+          <dt>선정 근거</dt><dd>${esc(p.reason)}</dd>
+          ${(p.sources || []).length ? `<dt>참고 자료</dt><dd>${p.sources.map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join("<br>")}</dd>` : ""}
+          ${p.basis ? `<dt>기반 자료</dt><dd>${(p.basis.files || []).map((f) => `📄 ${esc(f.name)}`).join("<br>")}${(p.basis.files || []).length && (p.basis.urls || []).length ? "<br>" : ""}${(p.basis.urls || []).map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u)}</a>`).join("<br>")}${(p.basis.unreadable || []).length ? `<br><span style="color:var(--warn)">읽지 못함: ${esc(p.basis.unreadable.join(", "))}</span>` : ""}</dd>` : ""}
+          <dt>글자 수</dt><dd>${esc(p.charCount)}</dd>
+          ${p.costUsd ? `<dt>API 비용 (추정)</dt><dd>$${Number(p.costUsd).toFixed(3)} <span class="sub">${(p.costs || []).map((c) => `${esc(c.label)} $${Number(c.usd).toFixed(3)}`).join(" · ")}</span></dd>` : ""}
+          <dt>요청 · 생성</dt><dd>${esc(p.requester)} · ${esc(p.createdAt)}</dd>
+          ${p.approvedBy ? `<dt>승인</dt><dd>${esc(p.approvedBy)} ${esc(p.approvedAt || "")}</dd>` : ""}
+          ${p.publishUrl ? `<dt>발행</dt><dd><a href="${esc(p.publishUrl)}" target="_blank" rel="noopener">${esc(p.publishUrl)}</a><br><span class="sub">${esc(p.publishedBy || "")} ${esc(p.publishedAt || "")}</span></dd>` : ""}
+        </dl>
+        <h3 style="font-size:14px;margin:18px 0 0">검토 메모</h3>
+        ${(p.memos || []).map((m) => `<div class="memo ${["Claude", "시스템"].includes(m.by) ? "claude" : ""}"><b>${esc(m.by)} · ${esc(m.at)}</b>\n${esc(m.text)}</div>`).join("") || `<div class="sub">아직 없습니다</div>`}
+      </div>
+      <div>
+        ${f("title", "제목")}
+        <div class="row"><div style="flex:1">${f("publishDate", "발행 예정일", 'type="date"')}</div><div style="flex:2">${f("tags", "태그")}</div></div>
+        <label>본문 <span style="font-weight:400">(## 소제목, - 목록)</span> <a href="#" id="togglePrev" style="float:right">미리보기</a></label>
+        <textarea data-f="body" rows="22" ${ro ? "readonly" : ""}>${esc(p.body)}</textarea>
+        <div class="preview hidden" id="prev"></div>
+        <div class="sub" style="margin-top:4px">[[사진:…]] 줄은 사진 자리입니다. 줄을 옮기면 사진 위치가 바뀌고, 미리보기에서 실제 사진을 볼 수 있습니다.</div>
+        <div class="card" style="margin-top:14px" id="photoCard">
+          <h2>본문 사진 (${imgs.length})</h2>
+          ${busyImg ? `<div class="dup" style="margin:0 0 8px"><span class="spin"></span>AI가 사진을 만드는 중입니다 (30초~2분). 끝나면 자동으로 나타납니다.</div>` : ""}
+          ${p.imageError ? `<div class="dup" style="margin:0 0 8px">마지막 사진 생성 실패: ${esc(p.imageError)}</div>` : ""}
+          ${imgs.map((im) => { const n = order.indexOf(im.iid) + 1; return `<div class="pimg" data-iid="${esc(im.iid)}">
+            <a href="${imgSrc(im.iid)}" target="_blank" rel="noopener"><img src="${imgSrc(im.iid)}" alt="" loading="lazy"></a>
+            <div><div class="sub">${n ? `<b>사진 ${n}</b>` : `<b style="color:var(--warn)">본문에 없음</b>`} · ${im.source === "ai" ? "AI 생성" : "업로드"} · ${esc(im.by || "")} ${esc(im.at || "")}</div>
+              <input class="pcap" value="${esc(im.caption || "")}" placeholder="사진 설명 (선택)" maxlength="80" ${canImg ? "" : "readonly"}>
+              <div class="row">${canImg ? `<select class="ppos" style="flex:1;min-width:130px">${posOpts(`<option value="">위치 옮기기…</option>`)}</select><button class="btn ghost sm" data-pa="save">적용</button>${im.source === "ai" && state.imageEnabled ? `<button class="btn ghost sm" data-pa="redo">다시 만들기</button>` : ""}` : ""}
+                <button class="btn ghost sm" data-pa="dl">다운로드</button>${canImg ? `<button class="btn ghost sm" data-pa="del" style="color:var(--bad)">삭제</button>` : ""}</div></div></div>`; }).join("") || `<p style="margin:0">아직 사진이 없습니다. 직접 올리거나 AI로 만들어 본문에 넣어 보세요.</p>`}
+          ${canImg ? `
+          <div class="seg"><button id="segUp" class="on">내 사진 올리기</button><button id="segAi">AI로 만들기</button></div>
+          <div id="paneUp">
+            <div class="row"><input type="file" id="pFile" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="flex:2"><select id="pUpPos" style="flex:1;min-width:140px">${posOpts("")}</select></div>
+            <div class="row" style="margin-top:6px"><input id="pUpCap" placeholder="사진 설명 (선택)" maxlength="80"><button class="btn" id="pUpBtn">본문에 넣기</button></div>
+          </div>
+          <div id="paneAi" class="hidden">
+            ${state.imageEnabled ? `<div class="row"><select id="pAiCount" style="flex:1"><option value="1">1장</option><option value="2" selected>2장</option><option value="3">3장</option><option value="4">4장</option></select><select id="pAiPos" style="flex:2;min-width:140px">${posOpts(`<option value="auto">자동 (내용에 맞는 소제목 아래)</option>`)}</select></div>
+            <div class="row" style="margin-top:6px"><input id="pAiDir" placeholder="원하는 장면 (선택) — 예: 매장에서 상담하는 모습" maxlength="300"><button class="btn accent" id="pAiBtn">사진 만들기</button></div>
+            <div class="sub" style="margin-top:6px">글 내용과 관리자가 정한 사진 지침에 맞춰 만듭니다. AI 사진은 실제 제품을 정확히 재현하지 못하니, 제품이 주인공인 컷은 실제 사진을 올려 주세요.</div>` : `<p style="margin:0">AI 사진 생성이 아직 설정되지 않았습니다. 관리자에게 문의해 주세요.</p>`}
+          </div>` : ""}
+        </div>
+        ${ro ? "" : `<div class="actions">
+          <button class="btn ghost" id="saveBtn">저장</button>
+          ${p.status !== "승인" ? `<button class="btn accent" data-st="승인">저장 후 승인</button>` : ""}
+          <button class="btn warn" data-st="수정요청">수정요청 → 자동으로 다시 쓰기</button>
+          ${p.status !== "보류" ? `<button class="btn ghost" data-st="보류">보류</button>` : ""}
+          ${["보류", "수정요청", "승인"].includes(p.status) ? `<button class="btn ghost" data-st="초안">초안으로</button>` : ""}
+        </div>`}
+        ${p.status === "승인" ? `
+        <div class="card"><h2>네이버 발행</h2>
+          <p>네이버 에디터에 제목 → 본문 순서로 붙여넣고, 썸네일 PNG를 대표 이미지로 올린 뒤 직접 발행하세요.${order.length ? " 본문의 <b>[사진 N]</b> 자리에 내려받은 사진을 같은 번호대로 넣고 자리표시 글자는 지워 주세요." : ""}</p>
+          <div class="row"><button class="btn ghost sm" id="cpTitle">제목 복사</button><button class="btn sm" id="cpBody">본문 복사 (서식 포함)</button><button class="btn ghost sm" id="cpTags">태그 복사</button><button class="btn ghost sm" id="dlPng2">썸네일 PNG</button>${order.length ? `<button class="btn ghost sm" id="dlPhotos">본문 사진 ${order.length}장 받기</button>` : ""}
+          <a class="btn ghost sm" style="text-decoration:none" href="${state.brand?.naverBlogId ? `https://blog.naver.com/PostWriteForm.naver?blogId=${encodeURIComponent(state.brand.naverBlogId)}` : "https://blog.naver.com/GoBlogWrite.naver"}" target="_blank" rel="noopener">네이버 글쓰기 열기 ↗</a></div>
+          <label>발행 후 글 주소</label><div class="row"><input id="pubUrl" placeholder="https://blog.naver.com/..."><button class="btn accent" id="pubDone">발행완료 처리</button></div>
+        </div>` : ""}
+        <div class="vers"><h3>버전 히스토리 (${versions.length})</h3>
+          ${versions.map((v) => `<div class="ver"><b>v${v.n}</b><span><span class="act act-${esc(v.action).replace(/ /g, "_")}">${esc(v.action)}</span> · ${esc(v.by)} · <span class="sub">${esc(v.at)}</span><br><span class="sub">${esc(v.detail)}</span></span>
+            ${v.n !== p.version ? `<button class="btn ghost sm" data-ver="${v.n}">비교</button>` : `<span class="sub">현재</span>`}</div>`).join("")}
+        </div>
+      </div>
+    </div>`;
+  $("#drawer").classList.remove("hidden");
+  drawThumb($("#thumbCv"), p);
+  $("#closeD").onclick = closeDrawer;
+  $$("#drawerIn [data-f]").forEach((el) => el.addEventListener("input", () => { if (el.dataset.f.startsWith("thumb")) drawThumb($("#thumbCv"), { ...p, ...collect() }); }));
+  $("#togglePrev").onclick = (e) => { e.preventDefault(); const pv = $("#prev"); pv.innerHTML = bodyToHTML(collect().body, "preview", imgs); pv.classList.toggle("hidden"); };
+  bindPhotos(p, order);
+  const dl = () => $("#thumbCv").toBlob((b) => { const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `${p.id}_thumbnail.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }, "image/png");
+  $("#dlPng").onclick = dl; if ($("#dlPng2")) $("#dlPng2").onclick = dl;
+  if ($("#saveBtn")) $("#saveBtn").onclick = save;
+  $$("#drawerIn [data-st]").forEach((b) => (b.onclick = () => setStatus(b.dataset.st)));
+  $$("#drawerIn [data-ver]").forEach((b) => (b.onclick = () => compare(+b.dataset.ver)));
+  if ($("#cpTitle")) {
+    $("#cpTitle").onclick = () => copyRich(esc(p.title), p.title, "제목을 복사했습니다");
+    $("#cpBody").onclick = () => copyRich(bodyToHTML(p.body, "copy", imgs), bodyToText(p.body), order.length ? "본문을 복사했습니다. [사진 N] 자리에 사진을 넣어 주세요." : "본문을 서식과 함께 복사했습니다");
+    if ($("#dlPhotos")) $("#dlPhotos").onclick = async () => { for (let i = 0; i < order.length; i++) { await downloadPhoto(order[i], `${p.id}_사진${String(i + 1).padStart(2, "0")}`); await new Promise((r) => setTimeout(r, 350)); } };
+    $("#cpTags").onclick = () => copyRich(esc(p.tags), p.tags, "태그를 복사했습니다");
+    $("#pubDone").onclick = () => setStatus("발행완료", { url: $("#pubUrl").value.trim() });
+  }
+}
+// ---------- 본문 사진 ----------
+async function downloadPhoto(iid, name) {
+  const res = await fetch(imgSrc(iid)); if (!res.ok) return toast("사진을 받지 못했습니다");
+  const b = await res.blob(), ext = (b.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = `${name}.${ext}`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+// 큰 사진은 올리기 전에 긴 변 1600px JPEG로 줄인다
+async function photoDataUrl(file) {
+  const raw = await new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(file); });
+  const img = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => no(new Error("이미지를 열 수 없습니다")); i.src = raw; });
+  if (file.size <= 1.5 * 1024 * 1024 && Math.max(img.width, img.height) <= 2000) return raw;
+  const k = Math.min(1, 1600 / Math.max(img.width, img.height)), cv = document.createElement("canvas");
+  cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+  const c = cv.getContext("2d"); c.fillStyle = "#fff"; c.fillRect(0, 0, cv.width, cv.height); c.drawImage(img, 0, 0, cv.width, cv.height);
+  return cv.toDataURL("image/jpeg", 0.88);
+}
+// 사진 작업 전에 저장하지 않은 본문 수정이 있으면 먼저 저장한다 (서버가 본문에 사진 자리를 넣기 때문)
+async function saveIfDirty() {
+  if (!dirty()) return;
+  const r = await api(`posts/${open.post.id}/save`, { fields: collect(), baseVersion: open.post.version });
+  open.post = r.post;
+}
+function bindPhotos(p, order) {
+  const refresh = async () => { await openPost(p.id); load(); };
+  const run = async (btn, fn) => { if (btn) btn.disabled = true; try { await saveIfDirty(); await fn(); } catch (e) { toast(e.message); if (btn) btn.disabled = false; } };
+  if ($("#segUp")) {
+    const seg = (ai) => { $("#segUp").classList.toggle("on", !ai); $("#segAi").classList.toggle("on", ai); $("#paneUp").classList.toggle("hidden", ai); $("#paneAi").classList.toggle("hidden", !ai); };
+    $("#segUp").onclick = () => seg(false); $("#segAi").onclick = () => seg(true);
+    $("#pUpPos").value = "end";
+    $("#pUpBtn").onclick = () => run($("#pUpBtn"), async () => {
+      const files = [...$("#pFile").files]; if (!files.length) throw new Error("올릴 사진을 선택해 주세요");
+      for (const file of files) await api(`posts/${p.id}/images/upload`, { dataUrl: await photoDataUrl(file), caption: files.length === 1 ? $("#pUpCap").value : "", pos: $("#pUpPos").value });
+      toast(`사진 ${files.length}장을 본문에 넣었습니다`); await refresh();
+    });
+    if ($("#pAiBtn")) $("#pAiBtn").onclick = () => run($("#pAiBtn"), async () => {
+      const r = await api(`posts/${p.id}/images/ai`, { count: +$("#pAiCount").value, direction: $("#pAiDir").value, pos: $("#pAiPos").value });
+      toast((await startImageJob(r.job, p.id)) || "사진을 만드는 중입니다. 잠시만 기다려 주세요."); await refresh();
+    });
+  }
+  $$("#photoCard .pimg").forEach((row) => {
+    const iid = row.dataset.iid, im = (p.images || []).find((x) => x.iid === iid);
+    $$("[data-pa]", row).forEach((b) => (b.onclick = () => {
+      const a = b.dataset.pa;
+      if (a === "dl") return downloadPhoto(iid, `${p.id}_사진${String(Math.max(1, order.indexOf(iid) + 1)).padStart(2, "0")}`);
+      if (a === "del") { if (!confirm("이 사진을 본문에서 뺄까요?")) return; return run(b, async () => { await api(`posts/${p.id}/images/${iid}/delete`, {}); toast("사진을 뺐습니다"); await refresh(); }); }
+      if (a === "save") return run(b, async () => { await api(`posts/${p.id}/images/${iid}/update`, { caption: $(".pcap", row).value, pos: $(".ppos", row).value }); toast("적용했습니다"); await refresh(); });
+      if (a === "redo") { const dir = prompt("어떤 사진으로 바꿀까요? (비워 두면 같은 자리에 새로 만듭니다)", ""); if (dir === null) return; return run(b, async () => { const r = await api(`posts/${p.id}/images/ai`, { replace: iid, direction: dir }); toast((await startImageJob(r.job, p.id)) || "사진을 다시 만드는 중입니다."); await refresh(); }); }
+    }));
+  });
+}
+async function startImageJob(job, postId) {
+  try {
+    const res = await fetch("/.netlify/functions/generate-background", { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + token }, body: JSON.stringify(job) });
+    if (res.ok || res.status === 202) return null;
+    throw new Error(String(res.status));
+  } catch (e) {
+    if (postId) await api(`posts/${postId}/images/failed`, { reason: e.message }).catch(() => {});
+    return `사진 작업을 시작하지 못했습니다 (${e.message}). 잠시 후 다시 시도해 주세요.`;
+  }
+}
+
+function collect() { const o = {}; $$("#drawerIn [data-f]").forEach((el) => (o[el.dataset.f] = el.value)); return o; }
+function dirty() { if (!open) return false; const v = collect(); return Object.keys(v).some((k) => (v[k] ?? "") !== (open.post[k] ?? "")); }
+function closeDrawer() {
+  if (open && dirty() && !confirm("저장하지 않은 변경사항이 있습니다. 닫을까요?")) return;
+  $("#drawer").classList.add("hidden"); open = null;
+}
+$("#drawer").addEventListener("click", (e) => { if (e.target.id === "drawer") closeDrawer(); });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if (!$("#modal").classList.contains("hidden")) $("#modal").classList.add("hidden"); else if (!$("#drawer").classList.contains("hidden")) closeDrawer(); });
+
+async function save() {
+  try {
+    const r = await api(`posts/${open.post.id}/save`, { fields: collect(), baseVersion: open.post.version });
+    toast(r.unchanged ? "바뀐 내용이 없습니다" : r.unapproved ? "저장했습니다. 승인된 글을 고쳐서 초안으로 돌아갔습니다 — 다시 승인해 주세요." : "저장했습니다"); await openPost(open.post.id); load();
+  } catch (e) { toast(e.message); }
+}
+async function setStatus(status, extra = {}) {
+  let memo = "";
+  if (status === "수정요청") { memo = prompt("무엇을 고칠지 적어 주세요. 바로 반영해 다시 씁니다 (1~3분)."); if (!memo) return; }
+  if (status === "보류") { memo = prompt("보류 사유 (선택)"); if (memo === null) return; }
+  try {
+    const r = await api(`posts/${open.post.id}/status`, { status, memo, fields: collect(), baseVersion: open.post.version, ...extra });
+    toast((await startJob(r.job)) || (status === "수정요청" ? "수정요청했습니다. 다시 쓰는 중입니다." : `${status}(으)로 바꿨습니다`));
+    await openPost(open.post.id); load();
+  } catch (e) { toast(e.message); }
+}
+
+// ---------- 버전 비교 ----------
+function lineDiff(a, b) {
+  const A = String(a).split("\n"), B = String(b).split("\n"), n = A.length, m = B.length;
+  const L = Array.from({ length: n + 1 }, () => new Int32Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = []; let i = 0, j = 0;
+  while (i < n && j < m) { if (A[i] === B[j]) { out.push(["", A[i]]); i++; j++; } else if (L[i + 1][j] >= L[i][j + 1]) out.push(["del", A[i++]]); else out.push(["add", B[j++]]); }
+  while (i < n) out.push(["del", A[i++]]); while (j < m) out.push(["add", B[j++]]);
+  return out;
+}
+async function compare(n) {
+  try {
+    const v = await api(`posts/${open.post.id}/versions/${n}`), cur = open.post, old = v.snapshot;
+    const LABEL = { title: "제목", thumbH: "썸네일 강조", thumbT1: "썸네일 제목1", thumbT2: "썸네일 제목2", thumbT3: "썸네일 제목3", thumbSub: "썸네일 부제", tags: "태그", publishDate: "발행 예정일", status: "상태" };
+    const rows = Object.keys(LABEL).filter((k) => (old[k] ?? "") !== (cur[k] ?? "")).map((k) => `<tr><td><b>${LABEL[k]}</b></td><td><span class="del" style="background:#fde4e4">${esc(old[k])}</span></td><td><span style="background:#e2f5e2">${esc(cur[k])}</span></td></tr>`).join("");
+    const d = lineDiff(old.body, cur.body);
+    const changed = d.some(([t]) => t);
+    $("#modalIn").innerHTML = `<div class="dhead"><h2>v${v.n} ↔ 현재(v${cur.version}) 비교</h2><button class="btn ghost" id="mClose">닫기</button></div>
+      <p class="sub">v${v.n}: ${esc(v.action)} · ${esc(v.by)} · ${esc(v.at)} — ${esc(v.detail)}</p>
+      ${rows ? `<table class="fdiff" style="width:100%;border-collapse:collapse"><tr><td></td><td class="sub">v${v.n}</td><td class="sub">현재</td></tr>${rows}</table>` : `<p class="sub">제목·썸네일·태그·상태는 같습니다.</p>`}
+      <h3 style="font-size:14px">본문 ${changed ? "" : "(같음)"}</h3>
+      ${changed ? `<div class="diff">${d.map(([t, s]) => t ? `<div class="${t}">${t === "add" ? "+ " : "− "}${esc(s) || "&nbsp;"}</div>` : `<div>${esc(s) || "&nbsp;"}</div>`).join("")}</div>` : ""}
+      ${cur.status !== "발행완료" ? `<div class="actions"><button class="btn warn" id="mRestore">v${v.n}으로 되돌리기</button><span class="sub">되돌려도 지금 버전은 히스토리에 남습니다</span></div>` : ""}`;
+    $("#modal").classList.remove("hidden");
+    $("#mClose").onclick = () => $("#modal").classList.add("hidden");
+    if ($("#mRestore")) $("#mRestore").onclick = async () => {
+      try { await api(`posts/${cur.id}/restore`, { n: v.n, baseVersion: cur.version }); $("#modal").classList.add("hidden"); toast(`v${v.n}으로 되돌렸습니다`); await openPost(cur.id); load(); } catch (e) { toast(e.message); }
+    };
+  } catch (e) { toast(e.message); }
+}
+$("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") $("#modal").classList.add("hidden"); });
+
+token ? start() : showLogin();
+</script>
+</body>
+</html>
