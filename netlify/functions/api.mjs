@@ -5,6 +5,7 @@ import {
   store, listJSON, getJSON, setJSON, getSettings, logActivity, savePost, nextPostId, findDuplicates, snapshot,
   normalizeProfile, publicBrand, normalizeThumbFormat, IMAGE_MODELS, insertMarker, removeMarker, markersIn,
 } from "../lib/core.mjs";
+import { naverStatus, keywordReport } from "../lib/naver.mjs";
 
 export const config = { path: ["/api/*"] };
 
@@ -62,7 +63,7 @@ export default async (req) => {
       const [posts, requests, bgMeta, settings] = await Promise.all([listJSON("posts/"), listJSON("requests/"), getJSON("assets/thumb-bg-meta"), getSettings()]);
       return json({
         me: who, role: admin ? "admin" : "member", adminPasswordSet: !!(process.env.ADMIN_PASSWORD || "").trim(), keywordSearchDefault: settings.keywordSearch !== false && settings.maxSearches > 0,
-        brand: publicBrand(settings), thumbFormat: settings.thumbFormat, imageEnabled: !!(process.env.CF_ACCOUNT_ID && process.env.CF_API_TOKEN), hasThumbBg: !!bgMeta, thumbBgVer: bgMeta?.at ? `${bgMeta.at}-${bgMeta.n || 0}` : "",
+        brand: publicBrand(settings), naver: { ...naverStatus(), on: settings.naverTrend !== false }, thumbFormat: settings.thumbFormat, imageEnabled: !!(process.env.CF_ACCOUNT_ID && process.env.CF_API_TOKEN), hasThumbBg: !!bgMeta, thumbBgVer: bgMeta?.at ? `${bgMeta.at}-${bgMeta.n || 0}` : "",
         posts: posts.map((p) => outPost(summary(p))).sort((a, b) => b.id.localeCompare(a.id)),
         requests: requests.filter((r) => ["대기", "작성중", "실패"].includes(r.state)).sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))
           .map(({ costUsd, costs, ...r }) => (admin ? { ...r, costUsd, costs } : { ...r, note: pubText(r.note) })),
@@ -308,6 +309,9 @@ export default async (req) => {
       if (body.profile && typeof body.profile === "object") next.profile = normalizeProfile({ ...cur.profile, ...body.profile });
       if (body.maxSearches !== undefined) next.maxSearches = Math.max(0, Math.min(5, parseInt(body.maxSearches, 10) || 0));
       if (typeof body.keywordSearch === "boolean") next.keywordSearch = body.keywordSearch;
+      if (typeof body.naverTrend === "boolean") next.naverTrend = body.naverTrend;
+      if (body.naverMinVolume !== undefined) next.naverMinVolume = Math.max(0, Math.min(100000, parseInt(body.naverMinVolume, 10) || 0));
+      if (body.naverCandidates !== undefined) next.naverCandidates = Math.max(5, Math.min(25, parseInt(body.naverCandidates, 10) || 15));
       await setJSON("settings/main", next);
       await logActivity(who, "설정 변경", "settings", Object.keys(body).filter((k) => body[k] !== cur[k]).join(", "));
       return json({ ok: true, settings: next });
@@ -359,6 +363,18 @@ export default async (req) => {
     }
     if (route === "settings/image-test" && method === "GET") {
       return json((await getJSON("assets/imagetest")) || { state: "none" });
+    }
+
+    // 네이버 검색량 확인 (모든 사용자) — 키워드 1개 + 연관 검색어, 또는 여러 키워드 비교
+    if (route === "naver/check" && method === "POST") {
+      const st = naverStatus();
+      if (!st.datalab) return json({ error: "네이버 검색 데이터가 아직 설정되지 않았습니다" + (admin ? " (환경변수 NAVER_CLIENT_ID·NAVER_CLIENT_SECRET)" : ". 관리자에게 문의해 주세요") }, 400);
+      const kws = String(body.keywords || "").split(/[,\n]/).map((k) => k.trim()).filter(Boolean).slice(0, 10);
+      if (!kws.length) return json({ error: "키워드를 입력해 주세요" }, 400);
+      try {
+        const rows = await keywordReport({ candidates: kws, seeds: kws.slice(0, 5), minVolume: 0, max: 15, related: kws.length === 1 ? 8 : 4 });
+        return json({ ok: true, rows, status: st, at: nowKST() });
+      } catch (e) { return json({ error: e.message }, 502); }
     }
 
     if (route === "usage" && method === "GET") {

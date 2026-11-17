@@ -150,7 +150,10 @@ export const DEFAULT_SETTINGS = {
 가로형 블로그 사진 구도, 과한 색보정 없이 자연스러운 색감.`,
   researchModel: "claude-haiku-5-5",   // 웹 검색·조사 모델 (저렴)
   maxSearches: 3,                      // 글 1건당 웹 검색 최대 횟수 (0이면 검색 안 함)
-  keywordSearch: true,                 // 키워드 요청에도 검색할지
+  keywordSearch: true,
+  naverTrend: true,                    // 네이버 검색 데이터로 트렌드 키워드 고르기 (키가 있을 때)
+  naverMinVolume: 100,                 // 월 검색수가 이보다 적은 후보는 제외 (검색광고 키가 있을 때)
+  naverCandidates: 15,                 // 조사 모델이 뽑는 후보 키워드 수                 // 키워드 요청에도 검색할지
   cta: "",                             // 본문 끝에 자동으로 붙는 문구 (고객별로 입력)
   coveredTopics: "",
   // 고객 프로필: 고객마다 바꾸는 값. 글쓰기·조사·사진 프롬프트에 자동으로 들어간다

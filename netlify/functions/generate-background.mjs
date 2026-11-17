@@ -8,6 +8,7 @@ import {
   thumbSpec, THUMB_JSON_KEY, THUMB_LINE_KEYS, cfGenerateImage, imageUsd, insertMarker, bodyHeadings, markersIn, IMG_MARK,
 } from "../lib/core.mjs";
 import crypto from "node:crypto";
+import { naverStatus, keywordReport, rowText, pct } from "../lib/naver.mjs";
 
 const API = "https://api.anthropic.com/v1/messages";
 
@@ -87,16 +88,54 @@ function extractJSON(text) {
 }
 
 // ① 조사: 저렴한 모델이 검색하고, 글쓰기에 필요한 핵심만 짧게 정리
-async function research({ settings, kind, keyword, memo, dupList, cost }) {
+const bizContext = (s) => { const pf = s.profile || {}; return [whoOf(pf), pf.products && `주력 상품: ${pf.products.replace(/\n/g, " / ")}`, pf.audience && `타깃 독자: ${pf.audience}`, pf.topics && `소재 축: ${pf.topics.replace(/\n/g, " / ")}`].filter(Boolean).join(". "); };
+
+// ---------- 네이버 검색 데이터 ----------
+// 트렌드: ① 조사 모델이 사람들이 실제로 검색할 만한 후보 키워드를 뽑고 ② 네이버 API로 검색량·추세를 매겨 상위 후보만 남긴다
+async function keywordIdeas({ settings, dupList, cost }) {
+  const n = settings.naverCandidates || 15;
+  const system = `너는 네이버 검색 키워드 기획자다. 이 블로그가 다룰 만한 주제로, 타깃 독자가 네이버 검색창에 실제로 입력할 법한 짧은 검색어를 고른다.
+규칙: 검색어는 2~4단어의 자연스러운 한국어 검색 표현(문장 금지, 따옴표·특수문자 금지). 브랜드명만 단독으로 쓰지 않는다. 이미 다룬 주제와 같은 검색어는 피한다. 계절·시기(오늘 ${todayKST()})를 고려한다.
+응답은 \`\`\`json 코드블록 하나: {"candidates":["검색어", ...${n}개],"seeds":["업종 대표 검색어 3~5개"]}`;
+  const user = `[블로그 주인]\n${bizContext(settings)}\n\n[이미 다룬 주제]\n${dupList}`;
+  const { text } = await claude({ model: settings.researchModel, system, messages: [{ role: "user", content: user }], maxTokens: 1200, cost });
+  const out = extractJSON(text) || {};
+  return { candidates: (out.candidates || []).map(String).slice(0, 25), seeds: (out.seeds || []).map(String).slice(0, 5) };
+}
+async function naverSearchData({ settings, r, posts, dupList, cost }) {
+  if (r.type === "트렌드") {
+    const ideas = await keywordIdeas({ settings, dupList, cost });
+    const rows = await keywordReport({ candidates: ideas.candidates, seeds: ideas.seeds, minVolume: settings.naverMinVolume ?? 100, max: 20 });
+    const fresh = rows.filter((x) => !findDuplicates(x.keyword, posts, [], settings.coveredTopics).length);
+    const list = (fresh.length ? fresh : rows).slice(0, 8);
+    if (!list.length) throw new Error("검색 데이터가 있는 후보 키워드를 찾지 못했습니다");
+    return { kind: "트렌드", at: nowKST(), list, hasVolume: list.some((x) => x.volume != null) };
+  }
+  const rows = await keywordReport({ candidates: [r.keyword], seeds: [r.keyword], minVolume: 0, max: 9, related: 8 });
+  const main = rows.find((x) => x.keyword.replace(/\s/g, "") === r.keyword.replace(/\s/g, "")) || null;
+  return { kind: "키워드", at: nowKST(), main, list: rows.filter((x) => x !== main).slice(0, 8), hasVolume: rows.some((x) => x.volume != null) };
+}
+function naverBlock(sd) {
+  if (!sd) return "";
+  if (sd.kind === "트렌드") return `[네이버 검색 데이터 — 실제 검색량 기준 후보, 점수 높은 순]\n${sd.list.map((x, i) => `${i + 1}. ${rowText(x)}`).join("\n")}\n\n위 후보 중 하나를 핵심 키워드로 골라 keyword 필드에 그대로 적으세요. 검색량과 상승세가 좋고, 이 블로그의 상품·독자와 자연스럽게 이어지며, 이미 다룬 주제와 겹치지 않는 것을 고릅니다. 그다음 그 키워드로 검색하는 사람에게 필요한 주제·각도를 정하고, 웹 검색은 그 키워드의 최신 사실 확인에 쓰세요.`;
+  return `[네이버 검색 데이터]\n${sd.main ? `입력 키워드: ${rowText(sd.main)}` : "입력 키워드: 검색 데이터 없음(검색량이 매우 적을 수 있음)"}${sd.list.length ? `\n연관 검색어(점수 높은 순):\n${sd.list.map((x) => `- ${rowText(x)}`).join("\n")}` : ""}`;
+}
+function naverWriteNote(sd, chosen) {
+  if (!sd) return "";
+  if (sd.kind === "트렌드") return `\n\n[핵심 검색 키워드] "${chosen}" — 제목 앞부분과 첫 문단, 소제목 1~2곳에 자연스럽게 넣고, 아래 연관 후보 중 어울리는 것을 보조 키워드로 쓰세요. keyword 필드는 "${chosen}, 보조 키워드" 형식.\n${sd.list.slice(0, 6).map((x) => `- ${rowText(x)}`).join("\n")}`;
+  return `\n\n${naverBlock(sd)}\n위 연관 검색어 중 글 주제와 맞는 2~3개를 보조 키워드로 본문·태그에 자연스럽게 넣으세요 (억지로 넣지 않기).`;
+}
+
+async function research({ settings, kind, keyword, memo, dupList, cost, naver = "" }) {
   const system = `너는 ${whoOf(settings.profile)} 블로그 담당자의 리서치 보조다.${settings.profile.products ? ` 주력 상품·서비스: ${settings.profile.products.slice(0, 300)}.` : ""}${settings.profile.audience ? ` 타깃 독자: ${settings.profile.audience.slice(0, 300)}.` : ""} 웹 검색을 최대 ${settings.maxSearches}회만 하고, 결과를 아래 JSON으로 짧게 정리한다. 기사 원문을 길게 옮기지 말고 사실만 요약한다. 확인되지 않은 수치는 넣지 않는다.
 \`\`\`json
-{"topic":"주제 한 줄","angle":"이 회사 관점에서 다룰 각도 한 줄","why":"지금 이 주제를 고른 이유(트렌드 근거) 한두 문장","facts":[{"fact":"글에 쓸 만한 사실 한 문장","source":"매체명·날짜"}]}
+{"topic":"주제 한 줄","keyword":"핵심 검색 키워드","angle":"이 회사 관점에서 다룰 각도 한 줄","why":"지금 이 주제를 고른 이유(트렌드 근거) 한두 문장","facts":[{"fact":"글에 쓸 만한 사실 한 문장","source":"매체명·날짜"}]}
 \`\`\`
 facts는 3~6개.`;
   const user = kind === "트렌드"
     ? `오늘은 ${todayKST()}입니다. 최근 한국에서 ${settings.profile.industry || "이 회사의 업종"} 및 타깃 독자와 관련해 시의성 있는 이슈를 찾아, 아래 이미 다룬 주제와 겹치지 않는 블로그 주제 하나를 고르세요.${settings.profile.topics ? ` 소재 축: ${settings.profile.topics.replace(/\n/g, " / ")}.` : ""}\n\n[이미 다룬 주제]\n${dupList}`
     : `키워드 "${keyword}"${memo ? ` (요청 메모: ${memo})` : ""}로 블로그 글을 쓰려 합니다. 이 키워드와 관련된 최신 사실·현장 이슈를 조사하세요. 아래 이미 다룬 주제와 겹치면 다른 각도(업종·상황·질문)를 제안하세요.\n\n[이미 다룬 주제]\n${dupList}`;
-  const { text, sources } = await claude({ model: settings.researchModel, system, messages: [{ role: "user", content: user }], maxSearches: settings.maxSearches, maxTokens: 1500, cost });
+  const { text, sources } = await claude({ model: settings.researchModel, system, messages: [{ role: "user", content: naver ? `${user}\n\n${naver}` : user }], maxSearches: settings.maxSearches, maxTokens: 1500, cost });
   const brief = extractJSON(text) || { topic: keyword || "", angle: "", why: "", facts: [], raw: text.slice(0, 1500) };
   return { brief, sources };
 }
@@ -246,32 +285,42 @@ export default async (req) => {
     if (!r || r.state !== "대기") return json({ skipped: true });
     r.state = "작성중"; r.startedAt = nowKST(); await setJSON(reqKey, r);
     try {
-      let brief, sources, basis = null;
+      let brief, sources, basis = null, searchData = null, naverNote = "", chosen = "";
       if (r.type === "자료") {
         ({ brief, sources, basis } = await researchSources({ settings, r, dupList, cost }));
       } else {
         // 키워드 요청: 요청 때 고른 '웹 검색 보완' 값을 따르고, 없으면(이전 요청) 설정 기본값
         const doSearch = r.type === "트렌드" || (r.webSearch ?? settings.keywordSearch);
+        // 네이버 검색 데이터 (키가 있고 설정에서 켜져 있을 때). 실패해도 글 생성은 계속한다
+        if (settings.naverTrend !== false && naverStatus().datalab) {
+          try { searchData = await naverSearchData({ settings, r, posts, dupList, cost }); }
+          catch (e) { naverNote = `네이버 검색 데이터를 가져오지 못해 웹 검색만으로 진행: ${e.message}`; }
+        }
         ({ brief, sources } = doSearch && settings.maxSearches > 0
-          ? await research({ settings, kind: r.type, keyword: r.keyword, memo: r.memo, dupList, cost })
+          ? await research({ settings, kind: r.type, keyword: r.keyword, memo: r.memo, dupList, cost, naver: naverBlock(searchData) })
           : { brief: { topic: r.keyword, angle: r.memo || "", why: "키워드 직접 입력", facts: [] }, sources: [] });
       }
+      if (searchData?.kind === "트렌드") {
+        const pick = searchData.list.find((x) => x.keyword.replace(/\s/g, "") === String(brief.keyword || "").replace(/\s/g, "")) || searchData.list[0];
+        chosen = pick.keyword; searchData.chosen = chosen;
+      } else if (searchData) chosen = searchData.chosen = r.keyword;
       const lead = r.type === "트렌드" ? "아래 조사 요약의 주제로" : r.type === "자료" ? `사용자가 올린 자료를 요약한 아래 내용을 기반으로${r.keyword ? ` "${r.keyword}" 주제의` : ""}` : `키워드 "${r.keyword}"로`;
       const task = `${lead} 블로그 글을 쓰세요.${r.memo ? ` 요청 메모: ${r.memo}` : ""}
 ${r.type === "자료" ? "자료의 핵심 메시지를 충실히 살리되 문장은 새로 쓰고, 자료에 없는 사실은 만들지 마세요." : "조사 요약에 있는 사실만 근거로 쓰고,"} 출처를 reason에 적으세요. 이미 다룬 주제와 겹치지 않게 하세요.
 
-${briefText(brief)}
+${briefText(brief)}${naverWriteNote(searchData, chosen)}
 
 [이미 다룬 주제]
 ${dupList}`;
       const out = await writePost({ settings, task, cost });
-      const notes = [...(out.factCheck || []).map((f) => `확인 필요: ${f}`), ...lengthNotes(settings, out.thumb), ...(basis?.unreadable || []).map((u) => `읽지 못한 자료: ${u}`)];
+      const notes = [...(out.factCheck || []).map((f) => `확인 필요: ${f}`), ...lengthNotes(settings, out.thumb), ...(basis?.unreadable || []).map((u) => `읽지 못한 자료: ${u}`), ...(naverNote ? [naverNote] : [])];
       const dup = findDuplicates(out.title, posts, [], "");
       if (dup.length) notes.push(`제목이 기존 글과 비슷함: ${dup.map((d) => d.ref).join(", ")}`);
       const latest = await getJSON(reqKey);
       if (!latest || latest.state !== "작성중") { await addCost(reqKey, cost, "취소된 생성"); return json({ cancelled: true }); }
       const post = {
-        id: r.postId, createdAt: todayKST(), keyword: out.keyword || r.keyword, reason: out.reason || brief.why || "",
+        id: r.postId, createdAt: todayKST(), keyword: chosen && !String(out.keyword || "").replace(/\s/g, "").includes(chosen.replace(/\s/g, "")) ? `${chosen}, ${out.keyword || ""}`.replace(/, $/, "") : out.keyword || r.keyword, reason: out.reason || brief.why || "",
+        ...(searchData ? { searchData } : {}),
         sources, title: out.title, ...thumbFields(settings, out.thumb), body: withCTA(out.body, settings.cta), tags: out.tags || "", images: [],
         publishDate: nextPublishDate(posts), status: "초안", publishUrl: "",
         memos: notes.length ? [{ by: "Claude", at: nowKST(), text: `[자동 검증]\n${notes.join("\n")}` }] : [],
